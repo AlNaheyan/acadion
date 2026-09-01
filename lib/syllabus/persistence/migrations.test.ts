@@ -59,3 +59,20 @@ describe("syllabus uploads migration", () => {
     expect(sql).not.toContain("raw_extracted_text");
   });
 });
+
+describe("syllabus import transaction migration", () => {
+  it("creates every entity through one authorized atomic function", async () => {
+    const sql = await migration("202609010005_create_import_transaction.sql");
+
+    expect(sql).toContain("create or replace function public.import_syllabus");
+    expect(sql).toContain("security invoker");
+    expect(sql).toContain("auth.role() <> 'service_role'");
+    expect(sql).toContain("insert into public.imported_courses");
+    expect(sql).toContain("insert into public.course_meetings");
+    expect(sql).toContain("insert into public.course_assessments");
+    expect(sql).toContain("insert into public.assessment_rules");
+    expect(sql).toContain("insert into public.syllabus_uploads");
+    expect(sql).not.toMatch(/exception\s+when/i);
+    expect(sql).toContain("revoke all on function");
+  });
+});
