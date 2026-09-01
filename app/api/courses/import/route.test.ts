@@ -8,7 +8,7 @@ import { PdfUploadError } from "../../../../lib/syllabus";
 import {
   handleCourseImport,
   type ImportCourseDependencies,
-} from "./route";
+} from "./handler";
 
 const extraction: CourseExtraction = {
   course: {

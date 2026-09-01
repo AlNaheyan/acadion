@@ -7,7 +7,7 @@ import {
 import {
   handleGetCourse,
   type CourseRouteDependencies,
-} from "./route";
+} from "./handler";
 
 const course: ImportedCourseView = {
   course_id: "course_123",
