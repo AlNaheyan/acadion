@@ -1,0 +1,56 @@
+{
+  "name": "homework table with mixed due times and no quizzes",
+  "pages": [
+    {
+      "page": 1,
+      "text": "CSC 10300 Introduction to Computing, Fall 2026. Instructor Ada Rivera. Class meets Monday and Wednesday from 2:00 PM to 3:15 PM in NAC 4/220. Assessment schedule follows."
+    },
+    {
+      "page": 2,
+      "text": "Assessment | Due Date | Due Time\nHomework 1 | September 9, 2026 | 8:00 PM\nHomework 2 | September 16, 2026 |\nHomework is due one week after assignment unless an exact date appears above."
+    }
+  ],
+  "expected": {
+    "course": {
+      "code": "CSC 10300",
+      "name": "Introduction to Computing",
+      "semester": "Fall 2026",
+      "instructor": "Ada Rivera"
+    },
+    "meetings": [
+      {
+        "days": ["MONDAY", "WEDNESDAY"],
+        "start_time": "14:00",
+        "end_time": "15:15",
+        "location": "NAC 4/220"
+      }
+    ],
+    "assessments": [
+      {
+        "id": "hw1",
+        "type": "homework",
+        "title": "Homework 1",
+        "due_date": "2026-09-09",
+        "due_time": "20:00",
+        "date_status": "confirmed",
+        "source": { "page": 2, "text": "Homework 1 | September 9, 2026 | 8:00 PM" }
+      },
+      {
+        "id": "hw2",
+        "type": "homework",
+        "title": "Homework 2",
+        "due_date": "2026-09-16",
+        "date_status": "confirmed",
+        "source": { "page": 2, "text": "Homework 2 | September 16, 2026 |" }
+      }
+    ],
+    "assessment_rules": [
+      {
+        "type": "homework",
+        "rule": "Homework is due one week after assignment unless an exact date appears above.",
+        "source": { "page": 2, "text": "Homework is due one week after assignment unless an exact date appears above." }
+      }
+    ],
+    "metadata": { "extraction_status": "success" }
+  }
+}

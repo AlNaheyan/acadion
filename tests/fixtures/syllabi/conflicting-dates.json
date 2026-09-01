@@ -1,0 +1,50 @@
+{
+  "name": "conflicting assessment dates",
+  "pages": [
+    {
+      "page": 1,
+      "text": "PSY 21000 Research Methods, Fall 2026. Instructor Jordan Lee. The exams section says Midterm 1 will be held October 12. Students should review every extracted date before adding events to a calendar."
+    },
+    {
+      "page": 3,
+      "text": "Course Calendar\nOctober 19 - Midterm 1\nThe final project is due December 8, 2026 at 11:59 PM through the course portal."
+    }
+  ],
+  "expected": {
+    "course": {
+      "code": "PSY 21000",
+      "name": "Research Methods",
+      "semester": "Fall 2026",
+      "instructor": "Jordan Lee"
+    },
+    "assessments": [
+      {
+        "id": "midterm1",
+        "type": "midterm",
+        "title": "Midterm 1",
+        "date_status": "ambiguous",
+        "raw_date_text": "October 12 / October 19",
+        "source": { "page": 3, "text": "October 19 - Midterm 1" }
+      },
+      {
+        "id": "final-project",
+        "type": "project",
+        "title": "Final Project",
+        "due_date": "2026-12-08",
+        "due_time": "23:59",
+        "date_status": "confirmed",
+        "source": { "page": 3, "text": "The final project is due December 8, 2026 at 11:59 PM through the course portal." }
+      }
+    ],
+    "metadata": {
+      "extraction_status": "partial",
+      "warnings": [
+        {
+          "type": "conflict",
+          "message": "Midterm 1 appears as October 12 in the exams section and October 19 in the course calendar.",
+          "assessment_id": "midterm1"
+        }
+      ]
+    }
+  }
+}

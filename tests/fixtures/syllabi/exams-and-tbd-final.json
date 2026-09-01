@@ -1,0 +1,60 @@
+{
+  "name": "midterms in outline and final exam TBD",
+  "pages": [
+    {
+      "page": 1,
+      "text": "ECO 20250 Intermediate Microeconomics, Section E, Fall 2026. Instructor Matthew Nagler. Thursday classes run 11:00 AM to 12:15 PM in NAC 1/203. The assessment outline is listed on the following page."
+    },
+    {
+      "page": 4,
+      "text": "Oct. 1 MIDTERM EXAM 1 covering Chapters 1-4\nNov. 5 MIDTERM EXAM 2 covering Chapters 5-8\nDate/Time TBD FINAL EXAM covering Chapters 9-12"
+    }
+  ],
+  "expected": {
+    "course": {
+      "code": "ECO 20250",
+      "name": "Intermediate Microeconomics",
+      "section": "E",
+      "semester": "Fall 2026",
+      "instructor": "Matthew Nagler"
+    },
+    "meetings": [
+      {
+        "days": ["THURSDAY"],
+        "start_time": "11:00",
+        "end_time": "12:15",
+        "location": "NAC 1/203"
+      }
+    ],
+    "assessments": [
+      {
+        "id": "midterm1",
+        "type": "midterm",
+        "title": "Midterm Exam 1",
+        "date": "2026-10-01",
+        "coverage": "Chapters 1-4",
+        "date_status": "confirmed",
+        "source": { "page": 4, "text": "Oct. 1 MIDTERM EXAM 1 covering Chapters 1-4" }
+      },
+      {
+        "id": "midterm2",
+        "type": "midterm",
+        "title": "Midterm Exam 2",
+        "date": "2026-11-05",
+        "coverage": "Chapters 5-8",
+        "date_status": "confirmed",
+        "source": { "page": 4, "text": "Nov. 5 MIDTERM EXAM 2 covering Chapters 5-8" }
+      },
+      {
+        "id": "final",
+        "type": "final_exam",
+        "title": "Final Exam",
+        "coverage": "Chapters 9-12",
+        "date_status": "TBD",
+        "raw_date_text": "Date/Time TBD",
+        "source": { "page": 4, "text": "Date/Time TBD FINAL EXAM covering Chapters 9-12" }
+      }
+    ],
+    "metadata": { "extraction_status": "partial" }
+  }
+}

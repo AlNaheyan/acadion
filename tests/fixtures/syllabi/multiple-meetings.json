@@ -1,0 +1,37 @@
+{
+  "name": "multiple class meeting patterns",
+  "pages": [
+    {
+      "page": 1,
+      "text": "BIO 10100 General Biology, Spring 2027. Instructor Lin Chen. Lecture meets Tuesday and Thursday 9:30 AM-10:45 AM in Marshak 101. Laboratory meets Friday 1:00 PM-3:50 PM in Marshak 405. Classes begin January 28, 2027 and end May 14, 2027."
+    }
+  ],
+  "expected": {
+    "course": {
+      "code": "BIO 10100",
+      "name": "General Biology",
+      "semester": "Spring 2027",
+      "instructor": "Lin Chen"
+    },
+    "meetings": [
+      {
+        "days": ["TUESDAY", "THURSDAY"],
+        "start_time": "09:30",
+        "end_time": "10:45",
+        "location": "Marshak 101",
+        "start_date": "2027-01-28",
+        "end_date": "2027-05-14"
+      },
+      {
+        "days": ["FRIDAY"],
+        "start_time": "13:00",
+        "end_time": "15:50",
+        "location": "Marshak 405",
+        "start_date": "2027-01-28",
+        "end_date": "2027-05-14"
+      }
+    ],
+    "assessments": [],
+    "metadata": { "extraction_status": "success" }
+  }
+}
