@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { CourseExtraction } from "../schema";
-import { courseExtractionToInsert, meetingsToInserts } from "./models";
+import {
+  assessmentRulesToInserts,
+  assessmentsToInserts,
+  courseExtractionToInsert,
+  meetingsToInserts,
+} from "./models";
 
 describe("courseExtractionToInsert", () => {
   it("maps canonical course metadata, ownership, status, and warnings", () => {
@@ -97,5 +102,71 @@ describe("meetingsToInserts", () => {
 
   it("returns no rows when no meetings were extracted", () => {
     expect(meetingsToInserts("course_123", [])).toEqual([]);
+  });
+});
+
+describe("assessmentsToInserts", () => {
+  it("maps dates, times, status, and source evidence without loss", () => {
+    expect(
+      assessmentsToInserts("course_123", [
+        {
+          id: "midterm1",
+          type: "midterm",
+          title: "Midterm Exam 1",
+          release_date: null,
+          due_date: null,
+          date: "2026-10-01",
+          due_time: null,
+          start_time: "11:00",
+          end_time: "12:15",
+          location: "NAC 1/203",
+          coverage: "Chapters 1-4",
+          date_status: "confirmed",
+          raw_date_text: null,
+          source: { page: 4, text: "Oct. 1 MIDTERM EXAM" },
+        },
+      ]),
+    ).toEqual([
+      {
+        course_id: "course_123",
+        external_id: "midterm1",
+        type: "midterm",
+        title: "Midterm Exam 1",
+        release_date: null,
+        due_date: null,
+        event_date: "2026-10-01",
+        due_time: null,
+        start_time: "11:00",
+        end_time: "12:15",
+        location: "NAC 1/203",
+        coverage: "Chapters 1-4",
+        date_status: "confirmed",
+        raw_date_text: null,
+        source_page: 4,
+        source_text: "Oct. 1 MIDTERM EXAM",
+      },
+    ]);
+  });
+});
+
+describe("assessmentRulesToInserts", () => {
+  it("maps relative rules separately from calendar assessments", () => {
+    expect(
+      assessmentRulesToInserts("course_123", [
+        {
+          type: "homework",
+          rule: "Homework is due one week after assignment.",
+          source: { page: 2, text: "due one week after assignment" },
+        },
+      ]),
+    ).toEqual([
+      {
+        course_id: "course_123",
+        type: "homework",
+        rule: "Homework is due one week after assignment.",
+        source_page: 2,
+        source_text: "due one week after assignment",
+      },
+    ]);
   });
 });

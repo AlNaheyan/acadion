@@ -32,3 +32,17 @@ describe("course meetings migration", () => {
     expect(sql).toContain("imported_courses.user_id = (select auth.jwt() ->> 'sub')");
   });
 });
+
+describe("course assessments migration", () => {
+  it("constrains assessment dates, types, evidence, ownership, and rules", async () => {
+    const sql = await migration("202609010003_create_course_assessments.sql");
+
+    expect(sql).toContain("create table if not exists public.course_assessments");
+    expect(sql).toContain("unique (course_id, external_id)");
+    expect(sql).toContain("course_assessments_status_dates");
+    expect(sql).toContain("char_length(source_text) <= 300");
+    expect(sql).toContain("create table if not exists public.assessment_rules");
+    expect(sql.match(/enable row level security/g)).toHaveLength(2);
+    expect(sql).toContain("on delete cascade");
+  });
+});
