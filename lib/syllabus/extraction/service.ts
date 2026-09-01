@@ -8,7 +8,7 @@ import { validateCourseExtraction, type ValidationIssue } from "../validate";
 import {
   requestStructuredSyllabusExtraction,
   type StructuredExtractionOptions,
-} from "./openai";
+} from "./gemini";
 import { verifyAssessmentEvidence } from "./evidence";
 import { deriveExtractionWarnings } from "./warnings";
 import { buildSyllabusExtractionPrompt, type SyllabusExtractionPrompt } from "./prompt";
