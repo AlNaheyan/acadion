@@ -4,6 +4,7 @@ import type {
   CourseExtraction,
   ImportSyllabusRpcClient,
 } from "../../../../lib/syllabus";
+import { PdfUploadError } from "../../../../lib/syllabus";
 import {
   handleCourseImport,
   type ImportCourseDependencies,
@@ -120,5 +121,28 @@ describe("POST /api/courses/import", () => {
       error: { code: "INVALID_UPLOAD" },
     });
     expect(deps.extractText).not.toHaveBeenCalled();
+  });
+
+  it("returns a stable safe error when upload validation fails", async () => {
+    const deps = dependencies({
+      validateUpload: vi.fn().mockRejectedValue(
+        new PdfUploadError(
+          "INVALID_PDF_SIGNATURE",
+          "private contents from the uploaded syllabus",
+        ),
+      ),
+    });
+
+    const response = await handleCourseImport(uploadRequest(), deps);
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({
+      error: {
+        code: "INVALID_PDF_SIGNATURE",
+        message: "The uploaded file is not a valid PDF.",
+      },
+    });
+    expect(JSON.stringify(body)).not.toContain("private contents");
   });
 });

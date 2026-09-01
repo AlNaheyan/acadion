@@ -7,6 +7,7 @@ import { createSupabaseServerClient } from "../../../../lib/supabase-server";
 import {
   extractPdfText,
   extractSyllabus,
+  mapSyllabusImportError,
   persistSyllabusImport,
   validatePdfUpload,
   type CourseExtraction,
@@ -106,16 +107,9 @@ export async function handleCourseImport(
       },
       { status: 201 },
     );
-  } catch {
-    return NextResponse.json(
-      {
-        error: {
-          code: "IMPORT_FAILED",
-          message: "The syllabus could not be imported.",
-        },
-      },
-      { status: 500 },
-    );
+  } catch (error) {
+    const mapped = mapSyllabusImportError(error);
+    return NextResponse.json(mapped.body, { status: mapped.status });
   }
 }
 
