@@ -9,6 +9,7 @@ import {
   requestStructuredSyllabusExtraction,
   type StructuredExtractionOptions,
 } from "./openai";
+import { verifyAssessmentEvidence } from "./evidence";
 import { buildSyllabusExtractionPrompt, type SyllabusExtractionPrompt } from "./prompt";
 
 export type SyllabusExtractionServiceErrorCode =
@@ -63,5 +64,5 @@ export async function extractSyllabus(
     );
   }
 
-  return validation.data;
+  return verifyAssessmentEvidence(validation.data, pages);
 }

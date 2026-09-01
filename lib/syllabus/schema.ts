@@ -184,6 +184,7 @@ export const extractionWarningTypeSchema = z.enum([
   "missing",
   "ambiguous",
   "conflict",
+  "source_mismatch",
   "unsupported",
 ]);
 
