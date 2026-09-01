@@ -10,6 +10,7 @@ import {
   type StructuredExtractionOptions,
 } from "./openai";
 import { verifyAssessmentEvidence } from "./evidence";
+import { deriveExtractionWarnings } from "./warnings";
 import { buildSyllabusExtractionPrompt, type SyllabusExtractionPrompt } from "./prompt";
 
 export type SyllabusExtractionServiceErrorCode =
@@ -64,5 +65,7 @@ export async function extractSyllabus(
     );
   }
 
-  return verifyAssessmentEvidence(validation.data, pages);
+  return deriveExtractionWarnings(
+    verifyAssessmentEvidence(validation.data, pages),
+  );
 }
