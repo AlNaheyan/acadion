@@ -6,6 +6,7 @@ import {
   assessmentsToInserts,
   courseExtractionToInsert,
   meetingsToInserts,
+  syllabusUploadToInsert,
 } from "./models";
 
 describe("courseExtractionToInsert", () => {
@@ -168,5 +169,37 @@ describe("assessmentRulesToInserts", () => {
         source_text: "due one week after assignment",
       },
     ]);
+  });
+});
+
+describe("syllabusUploadToInsert", () => {
+  it("stores safe metadata in the pending state", () => {
+    expect(
+      syllabusUploadToInsert("user_123", {
+        name: "fall-2026-syllabus.pdf",
+        size: 2048,
+        storageKey: "user_123/uploads/file.pdf",
+        sha256: "a".repeat(64),
+      }),
+    ).toEqual({
+      user_id: "user_123",
+      file_name: "fall-2026-syllabus.pdf",
+      file_size: 2048,
+      mime_type: "application/pdf",
+      storage_key: "user_123/uploads/file.pdf",
+      file_sha256: "a".repeat(64),
+      extraction_status: "pending",
+      error_code: null,
+    });
+  });
+
+  it("does not require storing the source document", () => {
+    const row = syllabusUploadToInsert("user_123", {
+      name: "syllabus.pdf",
+      size: 1024,
+    });
+    expect(row.storage_key).toBeNull();
+    expect(row.file_sha256).toBeNull();
+    expect(row).not.toHaveProperty("raw_extracted_text");
   });
 });

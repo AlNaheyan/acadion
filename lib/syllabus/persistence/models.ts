@@ -150,3 +150,52 @@ export function assessmentRulesToInserts(
     source_text: rule.source?.text ?? null,
   }));
 }
+
+export type SyllabusUploadStatus =
+  | "pending"
+  | "extracting"
+  | "success"
+  | "failed";
+
+export interface SyllabusUploadRow {
+  id: string;
+  user_id: string;
+  course_id: string | null;
+  file_name: string;
+  file_size: number;
+  mime_type: "application/pdf";
+  storage_key: string | null;
+  file_sha256: string | null;
+  extraction_status: SyllabusUploadStatus;
+  error_code: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SyllabusUploadInsert = Omit<
+  SyllabusUploadRow,
+  "id" | "course_id" | "created_at" | "updated_at"
+>;
+
+export interface SyllabusUploadMetadata {
+  name: string;
+  size: number;
+  storageKey?: string | null;
+  sha256?: string | null;
+}
+
+export function syllabusUploadToInsert(
+  userId: string,
+  file: SyllabusUploadMetadata,
+): SyllabusUploadInsert {
+  return {
+    user_id: userId,
+    file_name: file.name,
+    file_size: file.size,
+    mime_type: "application/pdf",
+    storage_key: file.storageKey ?? null,
+    file_sha256: file.sha256 ?? null,
+    extraction_status: "pending",
+    error_code: null,
+  };
+}

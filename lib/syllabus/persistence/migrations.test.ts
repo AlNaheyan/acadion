@@ -46,3 +46,16 @@ describe("course assessments migration", () => {
     expect(sql).toContain("on delete cascade");
   });
 });
+
+describe("syllabus uploads migration", () => {
+  it("tracks bounded safe metadata and lifecycle without raw text", async () => {
+    const sql = await migration("202609010004_create_syllabus_uploads.sql");
+
+    expect(sql).toContain("create table if not exists public.syllabus_uploads");
+    expect(sql).toContain("file_size > 0 and file_size <= 10485760");
+    expect(sql).toContain("pending', 'extracting', 'success', 'failed");
+    expect(sql).toContain("syllabus_uploads_success_course");
+    expect(sql).toContain("enable row level security");
+    expect(sql).not.toContain("raw_extracted_text");
+  });
+});
