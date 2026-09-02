@@ -11,6 +11,7 @@ import { ClassCalendarAction } from "./ClassCalendarAction";
 import { AssessmentCalendarAction } from "./AssessmentCalendarAction";
 import { CalendarExportConfirmation } from "./CalendarExportConfirmation";
 import { CalendarExportGuidance } from "./CalendarExportGuidance";
+import { OutlookEventActions } from "../calendar/OutlookEventActions";
 import {
   importSyllabus,
   syllabusUploadReducer,
@@ -164,6 +165,7 @@ export function SyllabusUploader() {
             <ClassCalendarAction result={state.result} />
             <AssessmentCalendarAction result={state.result} />
           </div>
+          <OutlookEventActions result={state.result} />
         </section>
       </>
     )}

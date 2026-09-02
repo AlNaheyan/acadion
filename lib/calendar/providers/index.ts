@@ -5,4 +5,5 @@ export * from "./google-calendars";
 export * from "./google-events";
 export * from "./microsoft";
 export * from "./microsoft-calendars";
+export * from "./microsoft-events";
 export * from "./token-crypto";
