@@ -19,6 +19,7 @@ function dependencies(overrides: Partial<GoogleClassDependencies> = {}): GoogleC
     insert: vi.fn().mockResolvedValue({ id: "event-1" }),
     save: vi.fn().mockResolvedValue(undefined),
     claim: vi.fn().mockResolvedValue(true),
+    markFailed: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }

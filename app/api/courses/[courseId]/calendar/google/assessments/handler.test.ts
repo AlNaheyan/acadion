@@ -10,7 +10,7 @@ function deps(): GoogleAssessmentDependencies {
   const insert = vi.fn().mockResolvedValueOnce({ id: "event-1" }).mockRejectedValueOnce(new Error("provider"));
   return { authenticate: vi.fn().mockResolvedValue("user"), client: () => ({}), readCourse: vi.fn().mockResolvedValue(course),
     accessToken: vi.fn().mockResolvedValue({ token: "access", selectedCalendarId: "calendar", connectionId: "connection", selectedCalendarTimezone: "UTC" }),
-    insert, save: vi.fn().mockResolvedValue(undefined), claim: vi.fn().mockResolvedValue(true) };
+    insert, save: vi.fn().mockResolvedValue(undefined), claim: vi.fn().mockResolvedValue(true), markFailed: vi.fn().mockResolvedValue(undefined) };
 }
 describe("bulk Google assessments", () => {
   it("keeps per-item results when one provider call fails", async () => {
@@ -19,5 +19,6 @@ describe("bulk Google assessments", () => {
     expect(response.status).toBe(207);
     await expect(response.json()).resolves.toMatchObject({ created_count: 1, failed_count: 1 });
     expect(dependencies.save).toHaveBeenCalledOnce();
+    expect(dependencies.markFailed).toHaveBeenCalledOnce();
   });
 });

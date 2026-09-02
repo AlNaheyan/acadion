@@ -6,6 +6,7 @@ import {
   claimCalendarEvent,
   insertGoogleEvent,
   mapMeetingToGoogleEvent,
+  markCalendarEventFailed,
   saveCreatedCalendarEvent,
   type CalendarConnectionClient,
   type CalendarExportClient,
@@ -25,6 +26,7 @@ export interface GoogleClassDependencies {
   insert: typeof insertGoogleEvent;
   save: typeof saveCreatedCalendarEvent;
   claim: typeof claimCalendarEvent;
+  markFailed: typeof markCalendarEventFailed;
 }
 
 const defaultDependencies: GoogleClassDependencies = {
@@ -38,6 +40,7 @@ const defaultDependencies: GoogleClassDependencies = {
   insert: insertGoogleEvent,
   save: saveCreatedCalendarEvent,
   claim: claimCalendarEvent,
+  markFailed: markCalendarEventFailed,
 };
 
 export async function handleGoogleClassCreation(
@@ -71,17 +74,19 @@ export async function handleGoogleClassCreation(
         connectionId: connection.connectionId, courseId: course.course_id, sourceType: "class", logicalKey: event.logicalKey,
       });
       if (!claimed) { skippedCount += 1; continue; }
-      const provider = await dependencies.insert(connection.selectedCalendarId, connection.token, event.payload);
-      await dependencies.save(client as CalendarExportClient, {
-        connectionId: connection.connectionId,
-        courseId: course.course_id,
-        sourceType: "class",
-        logicalKey: event.logicalKey,
-        providerEventId: provider.id,
-      });
-      created.push({ logical_key: event.logicalKey, provider_event_id: provider.id });
+      try {
+        const provider = await dependencies.insert(connection.selectedCalendarId, connection.token, event.payload);
+        await dependencies.save(client as CalendarExportClient, {
+          connectionId: connection.connectionId, courseId: course.course_id, sourceType: "class",
+          logicalKey: event.logicalKey, providerEventId: provider.id,
+        });
+        created.push({ logical_key: event.logicalKey, provider_event_id: provider.id });
+      } catch {
+        await dependencies.markFailed(client as CalendarExportClient, connection.connectionId, event.logicalKey);
+      }
     }
-    return Response.json({ created, created_count: created.length, skipped_count: skippedCount, excluded_count: mapped.length - events.length }, { status: 201 });
+    const failedCount = events.length - created.length - skippedCount;
+    return Response.json({ created, created_count: created.length, failed_count: failedCount, skipped_count: skippedCount, excluded_count: mapped.length - events.length }, { status: failedCount ? 207 : 201 });
   } catch (error) {
     if (error instanceof CourseReadError && error.code === "COURSE_NOT_FOUND") {
       return Response.json({ error: { code: "COURSE_NOT_FOUND", message: "Course not found." } }, { status: 404 });

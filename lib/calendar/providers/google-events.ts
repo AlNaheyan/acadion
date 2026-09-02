@@ -9,6 +9,7 @@ const recurrenceDay = {
 } as const;
 
 export interface GoogleEventPayload {
+  id: string;
   summary: string;
   description: string;
   location?: string;
@@ -23,6 +24,10 @@ function nextDate(date: string): string {
   const value = new Date(`${date}T00:00:00Z`);
   value.setUTCDate(value.getUTCDate() + 1);
   return value.toISOString().slice(0, 10);
+}
+
+function providerEventId(logicalKey: string): string {
+  return `acadion${createHash("sha256").update(logicalKey).digest("hex").slice(0, 40)}`;
 }
 
 export function mapAssessmentToGoogleEvent(input: {
@@ -40,6 +45,7 @@ export function mapAssessmentToGoogleEvent(input: {
     : time ? start : { date: nextDate(date) };
   const label = input.course.code ?? input.course.name ?? "Course";
   return { logicalKey, payload: {
+    id: providerEventId(logicalKey),
     summary: `${label} - ${assessment.title}`,
     description: [`Assessment type: ${assessment.type}.`, assessment.coverage ? `Coverage: ${assessment.coverage}` : null].filter(Boolean).join(" "),
     ...(assessment.location ? { location: assessment.location } : {}),
@@ -84,6 +90,7 @@ export function mapMeetingToGoogleEvent(input: {
   return {
     logicalKey,
     payload: {
+      id: providerEventId(logicalKey),
       summary: `${label} - Class`,
       description: `Weekly class meeting. Date range source: ${range.provenance}.`,
       ...(meeting.location ? { location: meeting.location } : {}),
@@ -107,6 +114,7 @@ export async function insertGoogleEvent(
     headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify(event),
   });
+  if (response.status === 409) return { id: event.id };
   if (!response.ok) throw new Error("Google calendar event could not be created.");
   const body = (await response.json()) as { id?: unknown };
   if (typeof body.id !== "string" || !body.id) throw new Error("Google returned an invalid event.");

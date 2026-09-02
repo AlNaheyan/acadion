@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseServerClient } from "../../../../../../../lib/supabase-server";
-import { claimCalendarEvent, googleAccessToken, insertGoogleEvent, mapAssessmentToGoogleEvent, saveCreatedCalendarEvent, type CalendarConnectionClient, type CalendarExportClient } from "../../../../../../../lib/calendar/providers";
+import { claimCalendarEvent, googleAccessToken, insertGoogleEvent, mapAssessmentToGoogleEvent, markCalendarEventFailed, saveCreatedCalendarEvent, type CalendarConnectionClient, type CalendarExportClient } from "../../../../../../../lib/calendar/providers";
 import { readImportedCourse, type CourseReadClient, type ImportedCourseView } from "../../../../../../../lib/syllabus";
 
 export interface GoogleAssessmentDependencies {
@@ -9,10 +9,11 @@ export interface GoogleAssessmentDependencies {
   accessToken(client: CalendarConnectionClient, userId: string): ReturnType<typeof googleAccessToken>;
   insert: typeof insertGoogleEvent; save: typeof saveCreatedCalendarEvent;
   claim: typeof claimCalendarEvent;
+  markFailed: typeof markCalendarEventFailed;
 }
 const defaults: GoogleAssessmentDependencies = {
   async authenticate() { return (await auth()).userId; }, client: createSupabaseServerClient,
-  readCourse: readImportedCourse, accessToken: googleAccessToken, insert: insertGoogleEvent, save: saveCreatedCalendarEvent, claim: claimCalendarEvent,
+  readCourse: readImportedCourse, accessToken: googleAccessToken, insert: insertGoogleEvent, save: saveCreatedCalendarEvent, claim: claimCalendarEvent, markFailed: markCalendarEventFailed,
 };
 
 export async function handleGoogleAssessmentCreation(courseId: string, dependencies: GoogleAssessmentDependencies = defaults): Promise<Response> {
@@ -41,6 +42,7 @@ export async function handleGoogleAssessmentCreation(courseId: string, dependenc
         await dependencies.save(client as CalendarExportClient, { connectionId: connection.connectionId, courseId, sourceType: "assessment", logicalKey: event.logicalKey, providerEventId: created.id });
         results.push({ logical_key: event.logicalKey, status: "created", provider_event_id: created.id });
       } catch {
+        await dependencies.markFailed(client as CalendarExportClient, connection.connectionId, event.logicalKey);
         results.push({ logical_key: event.logicalKey, status: "failed" });
       }
     }

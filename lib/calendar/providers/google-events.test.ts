@@ -41,6 +41,12 @@ describe("Google recurring class events", () => {
     expect(fetcher.mock.calls[0][0]).toContain("class%20calendar/events");
     expect(fetcher.mock.calls[0][1]).toMatchObject({ method: "POST", headers: { Authorization: "Bearer access" } });
   });
+
+  it("treats a deterministic provider ID conflict as an idempotent success", async () => {
+    const event = mapMeetingToGoogleEvent(input)!;
+    const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 409 }));
+    await expect(insertGoogleEvent("calendar", "access", event.payload, fetcher)).resolves.toEqual({ id: event.payload.id });
+  });
 });
 
 describe("Google assessment events", () => {
