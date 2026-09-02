@@ -1,5 +1,6 @@
 import Nav from "../../components/Nav";
 import { GoogleCalendarSettings } from "../../components/calendar/GoogleCalendarSettings";
+import { MicrosoftCalendarSettings } from "../../components/calendar/MicrosoftCalendarSettings";
 import { SyllabusUploader } from "../../components/syllabus/SyllabusUploader";
 
 export default function CourseHomegroundPage() {
@@ -19,6 +20,7 @@ export default function CourseHomegroundPage() {
           </p>
         </header>
         <GoogleCalendarSettings />
+        <MicrosoftCalendarSettings />
         <SyllabusUploader />
       </main>
     </div>
