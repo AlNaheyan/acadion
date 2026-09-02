@@ -5,6 +5,7 @@ import { FileText, LoaderCircle, Upload, X } from "lucide-react";
 
 import { Button } from "../ui/button";
 import { CourseSummaryCard } from "./CourseSummaryCard";
+import { ExtractionWarnings } from "./ExtractionWarnings";
 import {
   importSyllabus,
   syllabusUploadReducer,
@@ -137,7 +138,15 @@ export function SyllabusUploader() {
         </div>
       </form>
     </section>
-    {state.phase === "success" && <CourseSummaryCard result={state.result} />}
+    {state.phase === "success" && (
+      <>
+        <CourseSummaryCard result={state.result} />
+        <ExtractionWarnings
+          warnings={state.result.warnings}
+          assessments={state.result.assessments}
+        />
+      </>
+    )}
     </>
   );
 }
