@@ -7,6 +7,7 @@ import { Button } from "../ui/button";
 import { CourseSummaryCard } from "./CourseSummaryCard";
 import { ExtractionWarnings } from "./ExtractionWarnings";
 import { ExtractedDatesReview } from "./ExtractedDatesReview";
+import { ClassCalendarAction } from "./ClassCalendarAction";
 import {
   importSyllabus,
   syllabusUploadReducer,
@@ -147,6 +148,17 @@ export function SyllabusUploader() {
           assessments={state.result.assessments}
         />
         <ExtractedDatesReview result={state.result} />
+        <section aria-labelledby="calendar-actions-title" className="mt-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+          <h2 id="calendar-actions-title" className="text-xl font-semibold text-zinc-950">
+            Calendar exports
+          </h2>
+          <p className="mt-1 text-sm text-zinc-600">
+            Download standard calendar files after reviewing the extracted dates above.
+          </p>
+          <div className="mt-5">
+            <ClassCalendarAction result={state.result} />
+          </div>
+        </section>
       </>
     )}
     </>
