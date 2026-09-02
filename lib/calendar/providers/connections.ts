@@ -21,10 +21,12 @@ export interface CalendarConnectionClient {
 }
 
 export interface GoogleConnectionSecrets {
+  connectionId: string;
   accessToken: string;
   refreshToken: string;
   expiresAt: string;
   selectedCalendarId: string | null;
+  selectedCalendarTimezone: string | null;
 }
 
 export async function saveGoogleConnection(
@@ -59,17 +61,19 @@ export async function getGoogleConnectionSecrets(
 ): Promise<GoogleConnectionSecrets | null> {
   const { data, error } = await client
     .from("calendar_connections")
-    .select("access_token_ciphertext,refresh_token_ciphertext,token_expires_at,selected_calendar_id")
+    .select("id,access_token_ciphertext,refresh_token_ciphertext,token_expires_at,selected_calendar_id,selected_calendar_timezone")
     .eq("user_id", userId)
     .eq("provider", "google")
     .maybeSingle();
   if (error) throw new Error("Google connection could not be loaded.");
   if (!data) return null;
   return {
+    connectionId: String(data.id),
     accessToken: decryptOAuthSecret(String(data.access_token_ciphertext)),
     refreshToken: decryptOAuthSecret(String(data.refresh_token_ciphertext)),
     expiresAt: String(data.token_expires_at),
     selectedCalendarId: data.selected_calendar_id ? String(data.selected_calendar_id) : null,
+    selectedCalendarTimezone: data.selected_calendar_timezone ? String(data.selected_calendar_timezone) : null,
   };
 }
 

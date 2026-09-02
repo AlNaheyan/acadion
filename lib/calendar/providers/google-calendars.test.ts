@@ -22,10 +22,12 @@ describe("Google calendar selection provider", () => {
 
   it("uses a stored access token before its refresh window", async () => {
     const maybeSingle = vi.fn().mockResolvedValue({ data: {
+      id: "connection-1",
       access_token_ciphertext: "v1.invalid",
       refresh_token_ciphertext: "v1.invalid",
       token_expires_at: new Date(20_000_000).toISOString(),
       selected_calendar_id: "primary",
+      selected_calendar_timezone: "America/New_York",
     }, error: null });
     const client = {
       from: vi.fn().mockReturnValue({
@@ -40,6 +42,8 @@ describe("Google calendar selection provider", () => {
     await expect(googleAccessToken(client, "user", 1_000_000)).resolves.toEqual({
       token: "stored-access",
       selectedCalendarId: "primary",
+      connectionId: "connection-1",
+      selectedCalendarTimezone: "America/New_York",
     });
   });
 });

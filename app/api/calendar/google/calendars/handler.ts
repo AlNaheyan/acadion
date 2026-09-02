@@ -12,7 +12,7 @@ import {
 export interface GoogleCalendarDependencies {
   authenticate(): Promise<string | null>;
   connectionClient(): CalendarConnectionClient;
-  accessToken(client: CalendarConnectionClient, userId: string): Promise<{ token: string; selectedCalendarId: string | null }>;
+  accessToken(client: CalendarConnectionClient, userId: string): Promise<{ token: string; selectedCalendarId: string | null; connectionId: string; selectedCalendarTimezone: string | null }>;
   list(token: string): Promise<GoogleCalendarChoice[]>;
 }
 

@@ -26,15 +26,15 @@ export async function googleAccessToken(
   userId: string,
   now = Date.now(),
   fetcher: typeof fetch = fetch,
-): Promise<{ token: string; selectedCalendarId: string | null }> {
+): Promise<{ token: string; selectedCalendarId: string | null; connectionId: string; selectedCalendarTimezone: string | null }> {
   const connection = await getGoogleConnectionSecrets(client, userId);
   if (!connection) throw new Error("Google Calendar is not connected.");
   if (new Date(connection.expiresAt).getTime() > now + 60_000) {
-    return { token: connection.accessToken, selectedCalendarId: connection.selectedCalendarId };
+    return { token: connection.accessToken, selectedCalendarId: connection.selectedCalendarId, connectionId: connection.connectionId, selectedCalendarTimezone: connection.selectedCalendarTimezone };
   }
   const refreshed = await refreshGoogleAccessToken(connection.refreshToken, googleOAuthConfig(), fetcher);
   await saveGoogleAccessToken(client, userId, refreshed.access_token, refreshed.expires_in, now);
-  return { token: refreshed.access_token, selectedCalendarId: connection.selectedCalendarId };
+  return { token: refreshed.access_token, selectedCalendarId: connection.selectedCalendarId, connectionId: connection.connectionId, selectedCalendarTimezone: connection.selectedCalendarTimezone };
 }
 
 export async function listWritableGoogleCalendars(

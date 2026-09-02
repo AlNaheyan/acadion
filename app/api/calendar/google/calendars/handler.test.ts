@@ -15,7 +15,7 @@ function dependencies(overrides: Partial<GoogleCalendarDependencies> = {}) {
   return { finalEq, value: {
     authenticate: vi.fn().mockResolvedValue("user_123"),
     connectionClient: vi.fn().mockReturnValue(client),
-    accessToken: vi.fn().mockResolvedValue({ token: "access", selectedCalendarId: null }),
+    accessToken: vi.fn().mockResolvedValue({ token: "access", selectedCalendarId: null, connectionId: "connection-1", selectedCalendarTimezone: null }),
     list: vi.fn().mockResolvedValue(calendars),
     ...overrides,
   } satisfies GoogleCalendarDependencies };
@@ -23,7 +23,7 @@ function dependencies(overrides: Partial<GoogleCalendarDependencies> = {}) {
 
 describe("Google calendar selection API", () => {
   it("lists writable calendars and the persisted selection", async () => {
-    const { value } = dependencies({ accessToken: vi.fn().mockResolvedValue({ token: "access", selectedCalendarId: "primary" }) });
+    const { value } = dependencies({ accessToken: vi.fn().mockResolvedValue({ token: "access", selectedCalendarId: "primary", connectionId: "connection-1", selectedCalendarTimezone: "America/New_York" }) });
     const response = await handleGoogleCalendarsGet(value);
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ calendars, selected_calendar_id: "primary" });

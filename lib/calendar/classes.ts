@@ -55,7 +55,7 @@ function utcTimestamp(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
 
-function firstMeetingDate(startDate: string, meeting: Meeting): string {
+export function firstMeetingDate(startDate: string, meeting: Meeting): string {
   const [year, month, day] = startDate.split("-").map(Number);
   const start = new Date(Date.UTC(year, month - 1, day));
   const allowedDays = new Set<number>(
@@ -73,7 +73,7 @@ function firstMeetingDate(startDate: string, meeting: Meeting): string {
   return startDate;
 }
 
-function zonedLocalToUtc(
+export function zonedLocalToUtc(
   date: string,
   time: string,
   timezone: string,
