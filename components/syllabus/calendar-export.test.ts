@@ -4,6 +4,7 @@ import type { Meeting } from "../../lib/syllabus";
 import {
   CalendarDownloadError,
   calendarExportReducer,
+  countAssessmentExports,
   countExportableMeetings,
   downloadCalendar,
 } from "./calendar-export";
@@ -98,5 +99,46 @@ describe("class calendar export client", () => {
       ),
     );
     expect(save).not.toHaveBeenCalled();
+  });
+
+  it("counts only safe confirmed assessment events", () => {
+    const base = {
+      id: "midterm-1",
+      type: "midterm" as const,
+      title: "Midterm 1",
+      release_date: null,
+      due_date: null,
+      date: "2026-10-01",
+      due_time: null,
+      start_time: null,
+      end_time: null,
+      location: null,
+      coverage: null,
+      date_status: "confirmed" as const,
+      raw_date_text: null,
+      source: null,
+    };
+    expect(
+      countAssessmentExports(
+        [
+          base,
+          { ...base, id: "exam-2" },
+          {
+            ...base,
+            id: "final",
+            date: null,
+            date_status: "TBD",
+          },
+        ],
+        [
+          {
+            type: "conflict",
+            message: "Conflicting exam date.",
+            assessment_id: "exam-2",
+            source: null,
+          },
+        ],
+      ),
+    ).toEqual({ included: 1, excluded: 2 });
   });
 });

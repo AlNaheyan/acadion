@@ -1,4 +1,8 @@
-import type { Meeting } from "../../lib/syllabus";
+import type {
+  Assessment,
+  ExtractionWarning,
+  Meeting,
+} from "../../lib/syllabus";
 
 export type CalendarExportState =
   | { phase: "idle" }
@@ -107,4 +111,41 @@ export function countExportableMeetings(meetings: Meeting[]): number {
       meeting.end_date !== null &&
       meeting.start_date <= meeting.end_date,
   ).length;
+}
+
+export interface AssessmentExportCounts {
+  included: number;
+  excluded: number;
+}
+
+export function countAssessmentExports(
+  assessments: Assessment[],
+  warnings: ExtractionWarning[],
+): AssessmentExportCounts {
+  const unsafeTypes = new Set<ExtractionWarning["type"]>([
+    "conflict",
+    "source_mismatch",
+    "unsupported",
+  ]);
+  const unsafeIds = new Set(
+    warnings
+      .filter(
+        (warning) => unsafeTypes.has(warning.type) && warning.assessment_id,
+      )
+      .map((warning) => warning.assessment_id as string),
+  );
+  const hasGlobalBlock = warnings.some(
+    (warning) => unsafeTypes.has(warning.type) && !warning.assessment_id,
+  );
+  const included = assessments.filter(
+    (assessment) =>
+      assessment.date_status === "confirmed" &&
+      Boolean(
+        assessment.date || assessment.due_date || assessment.release_date,
+      ) &&
+      !hasGlobalBlock &&
+      !unsafeIds.has(assessment.id),
+  ).length;
+
+  return { included, excluded: assessments.length - included };
 }
