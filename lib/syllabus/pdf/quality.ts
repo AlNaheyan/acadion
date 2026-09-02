@@ -19,6 +19,8 @@ export interface PdfTextQualityOptions {
   minimumCharacters?: number;
   minimumWords?: number;
   minimumReadableRatio?: number;
+  maximumPages?: number;
+  maximumCharacters?: number;
 }
 
 export interface PdfTextQuality {
@@ -33,6 +35,8 @@ const defaultOptions: Required<PdfTextQualityOptions> = {
   minimumCharacters: 100,
   minimumWords: 15,
   minimumReadableRatio: 0.7,
+  maximumPages: 100,
+  maximumCharacters: 500_000,
 };
 
 export function validatePdfTextQuality(
@@ -41,6 +45,9 @@ export function validatePdfTextQuality(
 ): PdfTextQuality {
   const thresholds = { ...defaultOptions, ...options };
   const pageTexts = pages.map((page) => page.text.trim());
+  if (pages.length > thresholds.maximumPages) {
+    throw new PdfTextQualityError("BROKEN_TEXT_EXTRACTION", "The PDF has too many pages to process safely.");
+  }
   const combined = pageTexts.filter(Boolean).join("\n");
 
   if (!combined) {
@@ -62,6 +69,9 @@ export function validatePdfTextQuality(
     word_count: words.length,
     readable_character_ratio: readableCharacters / characters.length,
   };
+  if (quality.character_count > thresholds.maximumCharacters) {
+    throw new PdfTextQualityError("BROKEN_TEXT_EXTRACTION", "The PDF contains too much text to process safely.");
+  }
 
   if (quality.readable_character_ratio < thresholds.minimumReadableRatio) {
     throw new PdfTextQualityError(

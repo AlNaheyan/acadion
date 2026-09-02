@@ -35,7 +35,8 @@ export interface SyllabusExtractionPrompt {
 export function buildSyllabusExtractionPrompt(
   pages: PdfPageText[],
 ): SyllabusExtractionPrompt {
-  const document = formatPdfPagesForExtraction(pages);
+  const document = formatPdfPagesForExtraction(pages)
+    .replaceAll("</syllabus_document>", "&lt;/syllabus_document&gt;");
 
   return {
     instructions: SYLLABUS_EXTRACTION_INSTRUCTIONS,

@@ -14,6 +14,7 @@ export function microsoftOAuthConfig(): MicrosoftOAuthConfig {
   const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
   const redirectUri = process.env.MICROSOFT_OAUTH_REDIRECT_URI;
   if (!clientId || !clientSecret || !redirectUri) throw new Error("Microsoft OAuth is not configured.");
+  if (process.env.NODE_ENV === "production" && new URL(redirectUri).protocol !== "https:") throw new Error("Microsoft OAuth redirect must use HTTPS.");
   return { clientId, clientSecret, redirectUri, tenant: process.env.MICROSOFT_TENANT_ID ?? "common" };
 }
 

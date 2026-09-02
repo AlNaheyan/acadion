@@ -35,6 +35,7 @@ export function googleOAuthConfig(): GoogleOAuthConfig {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const redirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI;
   if (!clientId || !clientSecret || !redirectUri) throw new Error("Google OAuth is not configured.");
+  if (process.env.NODE_ENV === "production" && new URL(redirectUri).protocol !== "https:") throw new Error("Google OAuth redirect must use HTTPS.");
   return { clientId, clientSecret, redirectUri };
 }
 

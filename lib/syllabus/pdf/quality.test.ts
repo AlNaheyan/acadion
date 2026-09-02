@@ -61,4 +61,9 @@ describe("validatePdfTextQuality", () => {
       }),
     ).toMatchObject({ character_count: 19, word_count: 3 });
   });
+
+  it("bounds pages and extracted characters before model submission", () => {
+    expect(() => validatePdfTextQuality(pages("valid text ".repeat(20), "more text ".repeat(20)), { maximumPages: 1 })).toThrow("too many pages");
+    expect(() => validatePdfTextQuality(pages("valid text ".repeat(20)), { maximumCharacters: 50 })).toThrow("too much text");
+  });
 });
