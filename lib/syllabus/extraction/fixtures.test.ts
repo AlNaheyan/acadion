@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { generateAssessmentCalendar, generateClassCalendar } from "../../calendar";
 import type { PdfPageText } from "../pdf";
 import { validateCourseExtraction } from "../validate";
 import { extractSyllabus } from "./service";
@@ -11,6 +12,7 @@ interface ExtractionFixture {
   name: string;
   pages: Array<{ page: number; text: string }>;
   expected: Record<string, unknown>;
+  calendar_expectations: { class_events: number; assessment_events: number };
 }
 
 const fixtureDirectory = path.join(
@@ -42,6 +44,7 @@ describe("syllabus extraction regression fixtures", async () => {
         expect.stringContaining("final exam TBD"),
         expect.stringContaining("multiple class meeting"),
         expect.stringContaining("conflicting assessment dates"),
+        expect.stringContaining("prompt injection"),
       ]),
     );
   });
@@ -72,5 +75,10 @@ describe("syllabus extraction regression fixtures", async () => {
         ),
       );
     expect(capturedInput).toContain(`--- PAGE ${fixture.pages[0].page} ---`);
+    const generatedAt = new Date("2026-09-02T00:00:00Z");
+    expect(generateClassCalendar({ courseId: "fixture-course", course: result.course, meetings: result.meetings, generatedAt }).exportedCount)
+      .toBe(fixture.calendar_expectations.class_events);
+    expect(generateAssessmentCalendar({ courseId: "fixture-course", course: result.course, assessments: result.assessments, warnings: result.metadata.warnings, generatedAt }).exportedCount)
+      .toBe(fixture.calendar_expectations.assessment_events);
   });
 });

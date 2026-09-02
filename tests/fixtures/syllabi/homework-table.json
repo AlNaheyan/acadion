@@ -10,6 +10,7 @@
       "text": "Assessment | Due Date | Due Time\nHomework 1 | September 9, 2026 | 8:00 PM\nHomework 2 | September 16, 2026 |\nHomework is due one week after assignment unless an exact date appears above."
     }
   ],
+  "calendar_expectations": { "class_events": 0, "assessment_events": 2 },
   "expected": {
     "course": {
       "code": "CSC 10300",
