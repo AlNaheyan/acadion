@@ -1,17 +1,18 @@
+import type {
+  Assessment,
+  Course,
+  ExtractionWarning,
+  Meeting,
+} from "../../lib/syllabus";
+
 export const MAX_SYLLABUS_BYTES = 10 * 1024 * 1024;
 
 export interface ImportedSyllabusResponse {
   course_id: string;
-  course: {
-    name: string | null;
-    code: string | null;
-    section: string | null;
-    semester: string | null;
-    instructor: string | null;
-  };
-  meetings: unknown[];
-  assessments: unknown[];
-  warnings: unknown[];
+  course: Course;
+  meetings: Meeting[];
+  assessments: Assessment[];
+  warnings: ExtractionWarning[];
 }
 
 export type UploadState =

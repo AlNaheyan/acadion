@@ -4,6 +4,7 @@ import { useReducer, useRef, useState } from "react";
 import { FileText, LoaderCircle, Upload, X } from "lucide-react";
 
 import { Button } from "../ui/button";
+import { CourseSummaryCard } from "./CourseSummaryCard";
 import {
   importSyllabus,
   syllabusUploadReducer,
@@ -54,6 +55,7 @@ export function SyllabusUploader() {
   }
 
   return (
+    <>
     <section
       aria-labelledby="syllabus-upload-title"
       className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"
@@ -135,5 +137,7 @@ export function SyllabusUploader() {
         </div>
       </form>
     </section>
+    {state.phase === "success" && <CourseSummaryCard result={state.result} />}
+    </>
   );
 }
