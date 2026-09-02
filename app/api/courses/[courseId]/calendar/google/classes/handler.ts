@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createSupabaseServerClient } from "../../../../../../../lib/supabase-server";
 import {
   googleAccessToken,
+  claimCalendarEvent,
   insertGoogleEvent,
   mapMeetingToGoogleEvent,
   saveCreatedCalendarEvent,
@@ -23,6 +24,7 @@ export interface GoogleClassDependencies {
   accessToken(client: CalendarConnectionClient, userId: string): ReturnType<typeof googleAccessToken>;
   insert: typeof insertGoogleEvent;
   save: typeof saveCreatedCalendarEvent;
+  claim: typeof claimCalendarEvent;
 }
 
 const defaultDependencies: GoogleClassDependencies = {
@@ -35,6 +37,7 @@ const defaultDependencies: GoogleClassDependencies = {
   accessToken: googleAccessToken,
   insert: insertGoogleEvent,
   save: saveCreatedCalendarEvent,
+  claim: claimCalendarEvent,
 };
 
 export async function handleGoogleClassCreation(
@@ -62,7 +65,12 @@ export async function handleGoogleClassCreation(
       return Response.json({ error: { code: "NO_EXPORTABLE_MEETINGS", message: "No complete class meetings are available." } }, { status: 422 });
     }
     const created = [];
+    let skippedCount = 0;
     for (const event of events) {
+      const claimed = await dependencies.claim(client as CalendarExportClient, {
+        connectionId: connection.connectionId, courseId: course.course_id, sourceType: "class", logicalKey: event.logicalKey,
+      });
+      if (!claimed) { skippedCount += 1; continue; }
       const provider = await dependencies.insert(connection.selectedCalendarId, connection.token, event.payload);
       await dependencies.save(client as CalendarExportClient, {
         connectionId: connection.connectionId,
@@ -73,7 +81,7 @@ export async function handleGoogleClassCreation(
       });
       created.push({ logical_key: event.logicalKey, provider_event_id: provider.id });
     }
-    return Response.json({ created, created_count: created.length, excluded_count: mapped.length - events.length }, { status: 201 });
+    return Response.json({ created, created_count: created.length, skipped_count: skippedCount, excluded_count: mapped.length - events.length }, { status: 201 });
   } catch (error) {
     if (error instanceof CourseReadError && error.code === "COURSE_NOT_FOUND") {
       return Response.json({ error: { code: "COURSE_NOT_FOUND", message: "Course not found." } }, { status: 404 });

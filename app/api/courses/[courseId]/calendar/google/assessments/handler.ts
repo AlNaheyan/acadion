@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseServerClient } from "../../../../../../../lib/supabase-server";
-import { googleAccessToken, insertGoogleEvent, mapAssessmentToGoogleEvent, saveCreatedCalendarEvent, type CalendarConnectionClient, type CalendarExportClient } from "../../../../../../../lib/calendar/providers";
+import { claimCalendarEvent, googleAccessToken, insertGoogleEvent, mapAssessmentToGoogleEvent, saveCreatedCalendarEvent, type CalendarConnectionClient, type CalendarExportClient } from "../../../../../../../lib/calendar/providers";
 import { readImportedCourse, type CourseReadClient, type ImportedCourseView } from "../../../../../../../lib/syllabus";
 
 export interface GoogleAssessmentDependencies {
@@ -8,10 +8,11 @@ export interface GoogleAssessmentDependencies {
   readCourse(client: CourseReadClient, userId: string, courseId: string): Promise<ImportedCourseView>;
   accessToken(client: CalendarConnectionClient, userId: string): ReturnType<typeof googleAccessToken>;
   insert: typeof insertGoogleEvent; save: typeof saveCreatedCalendarEvent;
+  claim: typeof claimCalendarEvent;
 }
 const defaults: GoogleAssessmentDependencies = {
   async authenticate() { return (await auth()).userId; }, client: createSupabaseServerClient,
-  readCourse: readImportedCourse, accessToken: googleAccessToken, insert: insertGoogleEvent, save: saveCreatedCalendarEvent,
+  readCourse: readImportedCourse, accessToken: googleAccessToken, insert: insertGoogleEvent, save: saveCreatedCalendarEvent, claim: claimCalendarEvent,
 };
 
 export async function handleGoogleAssessmentCreation(courseId: string, dependencies: GoogleAssessmentDependencies = defaults): Promise<Response> {
@@ -34,6 +35,8 @@ export async function handleGoogleAssessmentCreation(courseId: string, dependenc
     const results = [];
     for (const event of mapped) {
       try {
+        const claimed = await dependencies.claim(client as CalendarExportClient, { connectionId: connection.connectionId, courseId, sourceType: "assessment", logicalKey: event.logicalKey });
+        if (!claimed) { results.push({ logical_key: event.logicalKey, status: "skipped" }); continue; }
         const created = await dependencies.insert(connection.selectedCalendarId, connection.token, event.payload);
         await dependencies.save(client as CalendarExportClient, { connectionId: connection.connectionId, courseId, sourceType: "assessment", logicalKey: event.logicalKey, providerEventId: created.id });
         results.push({ logical_key: event.logicalKey, status: "created", provider_event_id: created.id });
@@ -42,7 +45,8 @@ export async function handleGoogleAssessmentCreation(courseId: string, dependenc
       }
     }
     const createdCount = results.filter((result) => result.status === "created").length;
-    return Response.json({ results, created_count: createdCount, failed_count: results.length - createdCount }, { status: createdCount === results.length ? 201 : 207 });
+    const failedCount = results.filter((result) => result.status === "failed").length;
+    return Response.json({ results, created_count: createdCount, failed_count: failedCount, skipped_count: results.length - createdCount - failedCount }, { status: failedCount ? 207 : 201 });
   } catch {
     return Response.json({ error: { code: "GOOGLE_CALENDAR_FAILED", message: "Assessments could not be added to Google Calendar." } }, { status: 502 });
   }

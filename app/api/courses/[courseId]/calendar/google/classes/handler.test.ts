@@ -18,6 +18,7 @@ function dependencies(overrides: Partial<GoogleClassDependencies> = {}): GoogleC
     accessToken: vi.fn().mockResolvedValue({ token: "access", selectedCalendarId: "calendar-1", connectionId: "connection-1", selectedCalendarTimezone: "America/New_York" }),
     insert: vi.fn().mockResolvedValue({ id: "event-1" }),
     save: vi.fn().mockResolvedValue(undefined),
+    claim: vi.fn().mockResolvedValue(true),
     ...overrides,
   };
 }
@@ -32,6 +33,13 @@ describe("direct Google class creation", () => {
     expect(deps.save).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
       connectionId: "connection-1", providerEventId: "event-1", sourceType: "class",
     }));
+  });
+
+  it("skips an event whose stable key is already claimed", async () => {
+    const deps = dependencies({ claim: vi.fn().mockResolvedValue(false) });
+    const response = await handleGoogleClassCreation("course-1", deps);
+    await expect(response.json()).resolves.toMatchObject({ created_count: 0, skipped_count: 1 });
+    expect(deps.insert).not.toHaveBeenCalled();
   });
 
   it("requires a selected destination calendar", async () => {
