@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { generateAssessmentCalendar } from "../../../../../../lib/calendar";
 import { createSupabaseServerClient } from "../../../../../../lib/supabase-server";
+import { emitTelemetry } from "../../../../../../lib/observability";
 import {
   CourseReadError,
   readImportedCourse,
@@ -47,6 +48,7 @@ export async function handleAssessmentCalendarDownload(
   courseId: string,
   dependencies: AssessmentCalendarRouteDependencies = defaultDependencies,
 ): Promise<Response> {
+  const startedAt = performance.now();
   const userId = await dependencies.authenticate();
   if (!userId) {
     return NextResponse.json(
@@ -86,6 +88,7 @@ export async function handleAssessmentCalendarDownload(
         },
       );
     }
+    emitTelemetry("calendar_export", { outcome: "success", provider: "ics", export_type: "assessment", created_count: generated.exportedCount, excluded_count: generated.excludedCount, duration_ms: Math.round(performance.now() - startedAt) });
 
     return new Response(generated.ics, {
       status: 200,
@@ -98,6 +101,7 @@ export async function handleAssessmentCalendarDownload(
       },
     });
   } catch (error) {
+    emitTelemetry("calendar_export", { outcome: "failure", provider: "ics", export_type: "assessment", error_code: "CALENDAR_EXPORT_FAILED", duration_ms: Math.round(performance.now() - startedAt) });
     if (error instanceof CourseReadError && error.code === "COURSE_NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "COURSE_NOT_FOUND", message: "Course not found." } },

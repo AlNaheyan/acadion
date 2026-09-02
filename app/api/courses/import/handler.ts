@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "../../../../lib/supabase-server";
+import { emitTelemetry } from "../../../../lib/observability";
 import {
   extractPdfText,
   extractSyllabus,
@@ -101,6 +102,11 @@ export async function handleCourseImport(
       },
     );
     const persistenceDuration = performance.now() - persistenceStartedAt;
+    emitTelemetry("syllabus_import", {
+      outcome: "success", duration_ms: Math.round(performance.now() - startedAt), page_count: pages.length,
+      meeting_count: extraction.meetings.length, assessment_count: extraction.assessments.length,
+      warning_count: extraction.metadata.warnings.length,
+    });
 
     return NextResponse.json(
       {
@@ -116,6 +122,7 @@ export async function handleCourseImport(
     );
   } catch (error) {
     const mapped = mapSyllabusImportError(error);
+    emitTelemetry("syllabus_import", { outcome: "failure", duration_ms: Math.round(performance.now() - startedAt), error_code: mapped.body.error.code });
     return NextResponse.json(mapped.body, { status: mapped.status });
   }
 }
