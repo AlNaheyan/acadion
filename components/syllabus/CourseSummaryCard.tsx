@@ -1,10 +1,19 @@
 import { CalendarDays, Clock3, MapPin, UserRound } from "lucide-react";
 
 import type { ImportedSyllabusResponse } from "./upload-state";
+import { countAssessments } from "./assessment-counts";
 import { summarizeCourse } from "./summary";
 
 export function CourseSummaryCard({ result }: { result: ImportedSyllabusResponse }) {
   const summary = summarizeCourse(result.course, result.meetings);
+  const counts = countAssessments(result.assessments);
+  const assessmentCounts = [
+    ["Homework", counts.homework],
+    ["Quizzes", counts.quizzes],
+    ["Midterms", counts.midterms],
+    ["Exams & finals", counts.examsAndFinals],
+    ["Other dated", counts.otherDated],
+  ] as const;
 
   return (
     <section aria-labelledby="course-summary-title" className="mt-8 rounded-3xl bg-zinc-950 p-6 text-white shadow-xl sm:p-8">
@@ -61,6 +70,18 @@ export function CourseSummaryCard({ result }: { result: ImportedSyllabusResponse
             {summary.instructor ?? "Instructor not identified"}
           </p>
         </div>
+      </div>
+
+      <div className="mt-6 border-t border-white/15 pt-6">
+        <h3 className="text-sm font-semibold text-zinc-300">Assessment overview</h3>
+        <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {assessmentCounts.map(([label, count]) => (
+            <div key={label} className="rounded-2xl bg-white/5 p-4">
+              <dt className="text-xs leading-5 text-zinc-400">{label}</dt>
+              <dd className="mt-1 text-2xl font-semibold text-white">{count}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </section>
   );
