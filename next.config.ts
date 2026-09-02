@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  // remove this whole async rewrites() section
+  // PDF.js discovers its Node worker and font assets at runtime. Bundling it
+  // into an app-route chunk breaks that discovery under Turbopack.
+  serverExternalPackages: ["pdfjs-dist"],
   images: {
     domains: ["img.clerk.com"],
   }
