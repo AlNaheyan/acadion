@@ -6,6 +6,7 @@ import { FileText, LoaderCircle, Upload, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { CourseSummaryCard } from "./CourseSummaryCard";
 import { ExtractionWarnings } from "./ExtractionWarnings";
+import { ExtractedDatesReview } from "./ExtractedDatesReview";
 import {
   importSyllabus,
   syllabusUploadReducer,
@@ -145,6 +146,7 @@ export function SyllabusUploader() {
           warnings={state.result.warnings}
           assessments={state.result.assessments}
         />
+        <ExtractedDatesReview result={state.result} />
       </>
     )}
     </>
