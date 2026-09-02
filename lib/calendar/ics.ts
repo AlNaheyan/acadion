@@ -9,6 +9,7 @@ export interface IcsCalendarInput {
   name: string;
   events: IcsProperty[][];
   productId?: string;
+  properties?: IcsProperty[];
 }
 
 const encoder = new TextEncoder();
@@ -94,6 +95,7 @@ export function serializeIcsCalendar(input: IcsCalendarInput): string {
     { name: "CALSCALE", value: "GREGORIAN" },
     { name: "METHOD", value: "PUBLISH" },
     { name: "X-WR-CALNAME", value: input.name, valueType: "text" },
+    ...(input.properties ?? []),
   ];
   const lines = [
     "BEGIN:VCALENDAR",
