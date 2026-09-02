@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { Course, Meeting } from "../../syllabus";
-import { insertGoogleEvent, mapMeetingToGoogleEvent } from "./google-events";
+import { insertGoogleEvent, mapAssessmentToGoogleEvent, mapMeetingToGoogleEvent } from "./google-events";
 
 const input: { courseId: string; course: Course; meeting: Meeting; timezone: string } = {
   courseId: "course-123",
@@ -40,5 +40,22 @@ describe("Google recurring class events", () => {
     await expect(insertGoogleEvent("class calendar", "access", event.payload, fetcher)).resolves.toEqual({ id: "google-event-1" });
     expect(fetcher.mock.calls[0][0]).toContain("class%20calendar/events");
     expect(fetcher.mock.calls[0][1]).toMatchObject({ method: "POST", headers: { Authorization: "Bearer access" } });
+  });
+});
+
+describe("Google assessment events", () => {
+  const assessment = {
+    id: "midterm-1", type: "midterm" as const, title: "Midterm 1", release_date: null,
+    due_date: null, date: "2026-10-01", due_time: null, start_time: "09:30", end_time: "10:45",
+    location: "Room 101", coverage: null, date_status: "confirmed" as const, raw_date_text: null, source: null,
+  };
+  it("maps only confirmed, unblocked assessments", () => {
+    const event = mapAssessmentToGoogleEvent({ courseId: input.courseId, course: input.course, assessment, timezone: input.timezone });
+    expect(event?.payload).toMatchObject({
+      start: { dateTime: "2026-10-01T09:30:00" }, end: { dateTime: "2026-10-01T10:45:00" },
+      extendedProperties: { private: { acadionType: "assessment" } },
+    });
+    expect(mapAssessmentToGoogleEvent({ courseId: input.courseId, course: input.course, assessment, timezone: input.timezone, blocked: true })).toBeNull();
+    expect(mapAssessmentToGoogleEvent({ courseId: input.courseId, course: input.course, assessment: { ...assessment, date_status: "TBD" }, timezone: input.timezone })).toBeNull();
   });
 });

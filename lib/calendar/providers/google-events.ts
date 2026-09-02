@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { Course, Meeting } from "../../syllabus";
+import type { Assessment, Course, Meeting } from "../../syllabus";
 import { firstMeetingDate, zonedLocalToUtc, type CalendarDateRange } from "../classes";
 
 const recurrenceDay = {
@@ -12,10 +12,41 @@ export interface GoogleEventPayload {
   summary: string;
   description: string;
   location?: string;
-  start: { dateTime: string; timeZone: string };
-  end: { dateTime: string; timeZone: string };
-  recurrence: string[];
-  extendedProperties: { private: { acadionKey: string; acadionCourseId: string; acadionType: "class" } };
+  start: { dateTime: string; timeZone: string } | { date: string };
+  end: { dateTime: string; timeZone: string } | { date: string };
+  endTimeUnspecified?: boolean;
+  recurrence?: string[];
+  extendedProperties: { private: { acadionKey: string; acadionCourseId: string; acadionType: "class" | "assessment" } };
+}
+
+function nextDate(date: string): string {
+  const value = new Date(`${date}T00:00:00Z`);
+  value.setUTCDate(value.getUTCDate() + 1);
+  return value.toISOString().slice(0, 10);
+}
+
+export function mapAssessmentToGoogleEvent(input: {
+  courseId: string; course: Course; assessment: Assessment; timezone: string; blocked?: boolean;
+}): GoogleClassEvent | null {
+  const { assessment } = input;
+  if (assessment.date_status !== "confirmed" || input.blocked) return null;
+  const date = assessment.date ?? assessment.due_date ?? assessment.release_date;
+  const time = assessment.date ? assessment.start_time : assessment.due_date ? assessment.due_time : null;
+  if (!date) return null;
+  const logicalKey = `assessment:${input.courseId}:${assessment.id}`;
+  const start = time ? { dateTime: `${date}T${time}:00`, timeZone: input.timezone } : { date };
+  const end = time && assessment.date && assessment.end_time
+    ? { dateTime: `${date}T${assessment.end_time}:00`, timeZone: input.timezone }
+    : time ? start : { date: nextDate(date) };
+  const label = input.course.code ?? input.course.name ?? "Course";
+  return { logicalKey, payload: {
+    summary: `${label} - ${assessment.title}`,
+    description: [`Assessment type: ${assessment.type}.`, assessment.coverage ? `Coverage: ${assessment.coverage}` : null].filter(Boolean).join(" "),
+    ...(assessment.location ? { location: assessment.location } : {}),
+    start, end,
+    ...((time && !(assessment.date && assessment.end_time)) ? { endTimeUnspecified: true } : {}),
+    extendedProperties: { private: { acadionKey: logicalKey, acadionCourseId: input.courseId, acadionType: "assessment" } },
+  } };
 }
 
 export interface GoogleClassEvent {
