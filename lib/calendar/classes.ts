@@ -1,5 +1,6 @@
 import type { Course, Meeting } from "../syllabus";
 import { serializeIcsCalendar, type IcsProperty } from "./ics";
+import { createCalendarEventUid } from "./uid";
 
 const rruleDay = {
   MONDAY: "MO",
@@ -116,7 +117,6 @@ function zonedLocalToUtc(
 function eventForMeeting(
   input: ClassCalendarInput,
   meeting: Meeting,
-  index: number,
   timezone: string,
 ): IcsProperty[] | null {
   if (!meeting.start_time || !meeting.end_time) return null;
@@ -134,9 +134,20 @@ function eventForMeeting(
   if (firstDate > range.endDate) return null;
   const courseLabel = input.course.code ?? input.course.name ?? "Course";
   const description = `Weekly class meeting. Date range source: ${range.provenance}.`;
+  const logicalMeetingId = JSON.stringify({
+    days: [...meeting.days].sort(),
+    start_time: meeting.start_time,
+    end_time: meeting.end_time,
+    location: meeting.location,
+    start_date: range.startDate,
+    end_date: range.endDate,
+  });
 
   return [
-    { name: "UID", value: `${input.courseId}-meeting-${index}@calendar.acadion` },
+    {
+      name: "UID",
+      value: createCalendarEventUid(input.courseId, "class", logicalMeetingId),
+    },
     { name: "DTSTAMP", value: utcTimestamp(input.generatedAt) },
     {
       name: "DTSTART",
@@ -164,8 +175,8 @@ export function generateClassCalendar(
   input: ClassCalendarInput,
 ): GeneratedClassCalendar {
   const timezone = input.timezone ?? "America/New_York";
-  const candidateEvents = input.meetings.map((meeting, index) =>
-    eventForMeeting(input, meeting, index, timezone),
+  const candidateEvents = input.meetings.map((meeting) =>
+    eventForMeeting(input, meeting, timezone),
   );
   const events = candidateEvents.filter(
     (event): event is IcsProperty[] => event !== null,

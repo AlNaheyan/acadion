@@ -80,4 +80,16 @@ describe("generateClassCalendar", () => {
     expect(result).toMatchObject({ exportedCount: 0, excludedCount: 2 });
     expect(result.ics).not.toContain("BEGIN:VEVENT");
   });
+
+  it("retains meeting UIDs when input order changes", () => {
+    const friday = {
+      ...meeting,
+      days: ["FRIDAY"] as Meeting["days"],
+      start_time: "13:00",
+      end_time: "14:00",
+    };
+    const first = calendar([meeting, friday]).ics.match(/UID:[^\r]+/g)?.sort();
+    const reordered = calendar([friday, meeting]).ics.match(/UID:[^\r]+/g)?.sort();
+    expect(first).toEqual(reordered);
+  });
 });

@@ -4,6 +4,7 @@ import type {
   ExtractionWarning,
 } from "../syllabus";
 import { serializeIcsCalendar, type IcsProperty } from "./ics";
+import { createCalendarEventUid } from "./uid";
 
 export interface AssessmentCalendarInput {
   courseId: string;
@@ -55,7 +56,6 @@ function unsafeAssessmentIds(
 function eventForAssessment(
   input: AssessmentCalendarInput,
   assessment: Assessment,
-  index: number,
   timezone: string,
   unsafe: { ids: Set<string>; global: boolean },
 ): IcsProperty[] | null {
@@ -71,7 +71,11 @@ function eventForAssessment(
   const common: IcsProperty[] = [
     {
       name: "UID",
-      value: `${input.courseId}-assessment-${assessment.id || index}@calendar.acadion`,
+      value: createCalendarEventUid(
+        input.courseId,
+        "assessment",
+        assessment.id,
+      ),
     },
     { name: "DTSTAMP", value: utcTimestamp(input.generatedAt) },
   ];
@@ -152,8 +156,8 @@ export function generateAssessmentCalendar(
 ): GeneratedAssessmentCalendar {
   const timezone = input.timezone ?? "America/New_York";
   const unsafe = unsafeAssessmentIds(input.warnings ?? []);
-  const candidates = input.assessments.map((assessment, index) =>
-    eventForAssessment(input, assessment, index, timezone, unsafe),
+  const candidates = input.assessments.map((assessment) =>
+    eventForAssessment(input, assessment, timezone, unsafe),
   );
   const events = candidates.filter(
     (event): event is IcsProperty[] => event !== null,
