@@ -9,6 +9,7 @@ import { ExtractionWarnings } from "./ExtractionWarnings";
 import { ExtractedDatesReview } from "./ExtractedDatesReview";
 import { ClassCalendarAction } from "./ClassCalendarAction";
 import { AssessmentCalendarAction } from "./AssessmentCalendarAction";
+import { CalendarExportConfirmation } from "./CalendarExportConfirmation";
 import {
   importSyllabus,
   syllabusUploadReducer,
@@ -156,6 +157,7 @@ export function SyllabusUploader() {
           <p className="mt-1 text-sm text-zinc-600">
             Download standard calendar files after reviewing the extracted dates above.
           </p>
+          <CalendarExportConfirmation result={state.result} />
           <div className="mt-5 grid gap-5 lg:grid-cols-2">
             <ClassCalendarAction result={state.result} />
             <AssessmentCalendarAction result={state.result} />

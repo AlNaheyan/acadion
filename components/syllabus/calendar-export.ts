@@ -118,34 +118,77 @@ export interface AssessmentExportCounts {
   excluded: number;
 }
 
+export interface ExcludedAssessmentExport {
+  assessment: Assessment;
+  reason: string;
+}
+
+export interface ClassifiedAssessmentExports {
+  included: Assessment[];
+  excluded: ExcludedAssessmentExport[];
+}
+
+export function classifyAssessmentExports(
+  assessments: Assessment[],
+  warnings: ExtractionWarning[],
+): ClassifiedAssessmentExports {
+  const unsafeTypeReason: Partial<
+    Record<ExtractionWarning["type"], string>
+  > = {
+    conflict: "Conflicting information",
+    source_mismatch: "Source evidence could not be verified",
+    unsupported: "Unsupported information",
+  };
+  const globalBlock = warnings.find(
+    (warning) => unsafeTypeReason[warning.type] && !warning.assessment_id,
+  );
+  const warningByAssessment = new Map<string, ExtractionWarning>();
+  for (const warning of warnings) {
+    if (
+      warning.assessment_id &&
+      unsafeTypeReason[warning.type] &&
+      !warningByAssessment.has(warning.assessment_id)
+    ) {
+      warningByAssessment.set(warning.assessment_id, warning);
+    }
+  }
+
+  const included: Assessment[] = [];
+  const excluded: ExcludedAssessmentExport[] = [];
+  for (const assessment of assessments) {
+    const unsafeWarning = warningByAssessment.get(assessment.id) ?? globalBlock;
+    let reason: string | null = null;
+
+    if (unsafeWarning) {
+      reason = unsafeTypeReason[unsafeWarning.type] ?? "Unsafe extraction";
+    } else if (assessment.date_status === "TBD") {
+      reason = "Date is TBD";
+    } else if (assessment.date_status === "missing") {
+      reason = "Date is missing";
+    } else if (assessment.date_status === "ambiguous") {
+      reason = "Date is ambiguous";
+    } else if (
+      !assessment.date &&
+      !assessment.due_date &&
+      !assessment.release_date
+    ) {
+      reason = "No confirmed date";
+    }
+
+    if (reason) excluded.push({ assessment, reason });
+    else included.push(assessment);
+  }
+
+  return { included, excluded };
+}
+
 export function countAssessmentExports(
   assessments: Assessment[],
   warnings: ExtractionWarning[],
 ): AssessmentExportCounts {
-  const unsafeTypes = new Set<ExtractionWarning["type"]>([
-    "conflict",
-    "source_mismatch",
-    "unsupported",
-  ]);
-  const unsafeIds = new Set(
-    warnings
-      .filter(
-        (warning) => unsafeTypes.has(warning.type) && warning.assessment_id,
-      )
-      .map((warning) => warning.assessment_id as string),
-  );
-  const hasGlobalBlock = warnings.some(
-    (warning) => unsafeTypes.has(warning.type) && !warning.assessment_id,
-  );
-  const included = assessments.filter(
-    (assessment) =>
-      assessment.date_status === "confirmed" &&
-      Boolean(
-        assessment.date || assessment.due_date || assessment.release_date,
-      ) &&
-      !hasGlobalBlock &&
-      !unsafeIds.has(assessment.id),
-  ).length;
-
-  return { included, excluded: assessments.length - included };
+  const classified = classifyAssessmentExports(assessments, warnings);
+  return {
+    included: classified.included.length,
+    excluded: classified.excluded.length,
+  };
 }
