@@ -1,4 +1,5 @@
 import Nav from "../../components/Nav";
+import { GoogleCalendarSettings } from "../../components/calendar/GoogleCalendarSettings";
 import { SyllabusUploader } from "../../components/syllabus/SyllabusUploader";
 
 export default function CourseHomegroundPage() {
@@ -17,6 +18,7 @@ export default function CourseHomegroundPage() {
             Import the dates your professor provided, review anything uncertain, and prepare a calendar you can trust.
           </p>
         </header>
+        <GoogleCalendarSettings />
         <SyllabusUploader />
       </main>
     </div>
