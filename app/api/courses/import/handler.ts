@@ -61,6 +61,7 @@ export async function handleCourseImport(
   request: Request,
   dependencies: ImportCourseDependencies = defaultDependencies,
 ): Promise<Response> {
+  const startedAt = performance.now();
   const userId = await dependencies.authenticate();
   if (!userId) {
     return NextResponse.json(
@@ -84,8 +85,13 @@ export async function handleCourseImport(
     await dependencies.validateUpload(upload);
     const data = await upload.arrayBuffer();
     const sha256 = createHash("sha256").update(new Uint8Array(data)).digest("hex");
+    const extractionStartedAt = performance.now();
     const pages = await dependencies.extractText(data);
+    const pdfDuration = performance.now() - extractionStartedAt;
+    const modelStartedAt = performance.now();
     const extraction = await dependencies.extractStructured(pages);
+    const modelDuration = performance.now() - modelStartedAt;
+    const persistenceStartedAt = performance.now();
     const { courseId } = await dependencies.persist(
       dependencies.persistenceClient(),
       {
@@ -94,6 +100,7 @@ export async function handleCourseImport(
         extraction,
       },
     );
+    const persistenceDuration = performance.now() - persistenceStartedAt;
 
     return NextResponse.json(
       {
@@ -103,7 +110,9 @@ export async function handleCourseImport(
         assessments: extraction.assessments,
         warnings: extraction.metadata.warnings,
       },
-      { status: 201 },
+      { status: 201, headers: {
+        "Server-Timing": `pdf;dur=${pdfDuration.toFixed(1)}, model;dur=${modelDuration.toFixed(1)}, persist;dur=${persistenceDuration.toFixed(1)}, total;dur=${(performance.now() - startedAt).toFixed(1)}`,
+      } },
     );
   } catch (error) {
     const mapped = mapSyllabusImportError(error);

@@ -83,6 +83,7 @@ describe("POST /api/courses/import", () => {
     const response = await handleCourseImport(uploadRequest(), deps);
 
     expect(response.status).toBe(201);
+    expect(response.headers.get("server-timing")).toMatch(/pdf;dur=.*model;dur=.*persist;dur=.*total;dur=/);
     await expect(response.json()).resolves.toEqual({
       course_id: "course_123",
       course: extraction.course,

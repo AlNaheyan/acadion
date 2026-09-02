@@ -51,7 +51,7 @@ export function mapAssessmentToMicrosoftEvent(input: { courseId: string; course:
 
 export async function insertMicrosoftEvent(calendarId: string, accessToken: string, event: MicrosoftEventPayload, fetcher: typeof fetch = fetch): Promise<{ id: string }> {
   const response = await fetcher(`https://graph.microsoft.com/v1.0/me/calendars/${encodeURIComponent(calendarId)}/events`, {
-    method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify(event),
+    method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify(event), signal: AbortSignal.timeout(15_000),
   });
   if (!response.ok) throw new Error("Microsoft Outlook event could not be created.");
   const body = await response.json() as { id?: unknown }; if (typeof body.id !== "string" || !body.id) throw new Error("Microsoft returned an invalid event.");

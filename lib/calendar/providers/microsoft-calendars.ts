@@ -13,7 +13,7 @@ export async function microsoftAccessToken(client: CalendarConnectionClient, use
 }
 
 export async function listWritableMicrosoftCalendars(accessToken: string, fetcher: typeof fetch = fetch): Promise<MicrosoftCalendarChoice[]> {
-  const response = await fetcher("https://graph.microsoft.com/v1.0/me/calendars?$select=id,name,canEdit,isDefaultCalendar", { headers: { Authorization: `Bearer ${accessToken}` } });
+  const response = await fetcher("https://graph.microsoft.com/v1.0/me/calendars?$select=id,name,canEdit,isDefaultCalendar", { headers: { Authorization: `Bearer ${accessToken}` }, signal: AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error("Microsoft calendars could not be loaded.");
   const body = (await response.json()) as { value?: Array<{ id?: string; name?: string; canEdit?: boolean; isDefaultCalendar?: boolean }> };
   return (body.value ?? []).flatMap((item) => item.id && item.name && item.canEdit === true

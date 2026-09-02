@@ -44,7 +44,7 @@ export async function listWritableGoogleCalendars(
   const url = new URL("https://www.googleapis.com/calendar/v3/users/me/calendarList");
   url.searchParams.set("minAccessRole", "writer");
   url.searchParams.set("showDeleted", "false");
-  const response = await fetcher(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const response = await fetcher(url, { headers: { Authorization: `Bearer ${accessToken}` }, signal: AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error("Google calendars could not be loaded.");
   const body = (await response.json()) as CalendarListResponse;
   return (body.items ?? []).flatMap((item) => {

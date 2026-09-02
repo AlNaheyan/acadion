@@ -113,6 +113,7 @@ export async function insertGoogleEvent(
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify(event),
+    signal: AbortSignal.timeout(15_000),
   });
   if (response.status === 409) return { id: event.id };
   if (!response.ok) throw new Error("Google calendar event could not be created.");
