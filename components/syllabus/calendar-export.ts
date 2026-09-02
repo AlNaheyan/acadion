@@ -69,10 +69,18 @@ export async function downloadCalendar(
     save: browserSave,
   },
 ): Promise<string> {
-  const response = await dependencies.fetcher(endpoint, {
-    method: "GET",
-    headers: { Accept: "text/calendar" },
-  });
+  let response: Response;
+  try {
+    response = await dependencies.fetcher(endpoint, {
+      method: "GET",
+      headers: { Accept: "text/calendar" },
+    });
+  } catch {
+    throw new CalendarDownloadError(
+      "CALENDAR_DOWNLOAD_FAILED",
+      "The calendar download could not be reached. Check your connection and try again.",
+    );
+  }
 
   if (!response.ok) {
     let payload: { error?: { code?: string; message?: string } } = {};
@@ -98,7 +106,14 @@ export async function downloadCalendar(
   const fileName =
     contentDispositionFilename(response.headers.get("content-disposition")) ??
     fallbackFileName;
-  dependencies.save(await response.blob(), fileName);
+  try {
+    dependencies.save(await response.blob(), fileName);
+  } catch {
+    throw new CalendarDownloadError(
+      "CALENDAR_SAVE_FAILED",
+      "The calendar file could not be saved. Check your browser download settings and try again.",
+    );
+  }
   return fileName;
 }
 

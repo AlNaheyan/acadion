@@ -141,4 +141,52 @@ describe("class calendar export client", () => {
       ),
     ).toEqual({ included: 1, excluded: 2 });
   });
+
+  it("maps network and invalid-content failures to actionable errors", async () => {
+    await expect(
+      downloadCalendar("/calendar/classes.ics", "classes.ics", {
+        fetcher: vi.fn().mockRejectedValue(new Error("private network detail")),
+        save: vi.fn(),
+      }),
+    ).rejects.toEqual(
+      new CalendarDownloadError(
+        "CALENDAR_DOWNLOAD_FAILED",
+        "The calendar download could not be reached. Check your connection and try again.",
+      ),
+    );
+
+    await expect(
+      downloadCalendar("/calendar/classes.ics", "classes.ics", {
+        fetcher: vi.fn().mockResolvedValue(
+          Response.json({ unexpected: true }, { status: 200 }),
+        ),
+        save: vi.fn(),
+      }),
+    ).rejects.toEqual(
+      new CalendarDownloadError(
+        "INVALID_CALENDAR_RESPONSE",
+        "The server returned an invalid calendar download.",
+      ),
+    );
+  });
+
+  it("maps browser save failures without exposing details", async () => {
+    await expect(
+      downloadCalendar("/calendar/classes.ics", "classes.ics", {
+        fetcher: vi.fn().mockResolvedValue(
+          new Response("BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n", {
+            headers: { "Content-Type": "text/calendar" },
+          }),
+        ),
+        save: vi.fn(() => {
+          throw new Error("private browser detail");
+        }),
+      }),
+    ).rejects.toEqual(
+      new CalendarDownloadError(
+        "CALENDAR_SAVE_FAILED",
+        "The calendar file could not be saved. Check your browser download settings and try again.",
+      ),
+    );
+  });
 });
