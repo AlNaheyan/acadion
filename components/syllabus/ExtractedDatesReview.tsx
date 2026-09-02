@@ -21,7 +21,7 @@ function Evidence({ item }: { item: AssessmentReviewItem }) {
 }
 
 export function ExtractedDatesReview({ result }: { result: ImportedSyllabusResponse }) {
-  const review = buildAssessmentDateReview(result.assessments);
+  const review = buildAssessmentDateReview(result.assessments, result.warnings);
 
   return (
     <details className="group mt-6 rounded-3xl border border-zinc-200 bg-white shadow-sm">

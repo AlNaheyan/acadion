@@ -63,4 +63,12 @@ describe("buildAssessmentDateReview", () => {
       excluded: [],
     });
   });
+
+  it("moves a confirmed date with unverified evidence out of the trusted list", () => {
+    const review = buildAssessmentDateReview([confirmed], [{
+      type: "source_mismatch", message: "Evidence missing", assessment_id: confirmed.id, source: null,
+    }]);
+    expect(review.confirmed).toEqual([]);
+    expect(review.excluded[0]).toMatchObject({ id: confirmed.id, status: "unverified" });
+  });
 });

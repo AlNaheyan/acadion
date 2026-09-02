@@ -12,6 +12,7 @@ Security and trust rules:
 Extraction rules:
 - Extract only information explicitly supported by the supplied syllabus.
 - Never invent or infer missing dates, times, locations, names, sections, or semester boundaries.
+- When homework or quiz has a due date but no explicit due time, return due_time as null; the application applies its configured end-of-day default.
 - Never infer a final exam date from university schedules or general academic knowledge.
 - Use null for information that is not present.
 - Preserve explicit TBD values with date_status "TBD" and no normalized date.

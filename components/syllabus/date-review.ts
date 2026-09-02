@@ -1,4 +1,4 @@
-import type { Assessment } from "../../lib/syllabus";
+import type { Assessment, ExtractionWarning } from "../../lib/syllabus";
 
 export interface ReviewDate {
   label: "Released" | "Due" | "Event";
@@ -10,7 +10,7 @@ export interface AssessmentReviewItem {
   id: string;
   title: string;
   type: Assessment["type"];
-  status: Assessment["date_status"];
+  status: Assessment["date_status"] | "unverified";
   dates: ReviewDate[];
   rawDateText: string | null;
   evidence: Assessment["source"];
@@ -45,21 +45,28 @@ function reviewDates(assessment: Assessment): ReviewDate[] {
 
 export function buildAssessmentDateReview(
   assessments: Assessment[],
+  warnings: ExtractionWarning[] = [],
 ): AssessmentDateReview {
   const review: AssessmentDateReview = { confirmed: [], excluded: [] };
+  const blockedIds = new Set(
+    warnings
+      .filter((warning) => warning.type === "source_mismatch" || warning.type === "conflict")
+      .map((warning) => warning.assessment_id)
+      .filter((id): id is string => id !== null),
+  );
 
   for (const assessment of assessments) {
     const item: AssessmentReviewItem = {
       id: assessment.id,
       title: assessment.title,
       type: assessment.type,
-      status: assessment.date_status,
+      status: blockedIds.has(assessment.id) ? "unverified" : assessment.date_status,
       dates: reviewDates(assessment),
       rawDateText: assessment.raw_date_text,
       evidence: assessment.source,
     };
 
-    if (assessment.date_status === "confirmed" && item.dates.length > 0) {
+    if (item.status === "confirmed" && item.dates.length > 0) {
       review.confirmed.push(item);
     } else {
       review.excluded.push(item);

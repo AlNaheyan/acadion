@@ -68,7 +68,7 @@ describe("verifyAssessmentEvidence", () => {
   it("removes mismatched evidence and adds a warning", () => {
     const result = verifyAssessmentEvidence(
       extraction({ page: 1, text: "Midterm is October 1" }),
-      pages,
+      [{ page: 1, text: "Course information without an assessment schedule", items: [] }],
     );
 
     expect(result.assessments[0].source).toBeNull();
@@ -78,8 +78,38 @@ describe("verifyAssessmentEvidence", () => {
   });
 
   it("warns when assessment evidence is absent", () => {
-    const result = verifyAssessmentEvidence(extraction(null), pages);
+    const result = verifyAssessmentEvidence(extraction(null), [{ page: 1, text: "No schedule", items: [] }]);
     expect(result.metadata.warnings[0].message).toContain("No source evidence");
+  });
+
+  it("recovers an exact source line when the model omits evidence", () => {
+    const result = verifyAssessmentEvidence(extraction(null), pages);
+    expect(result.assessments[0].source).toEqual({
+      page: 4,
+      text: "Oct. 1 MIDTERM EXAM covering Chapters 1-4",
+    });
+    expect(result.metadata.warnings).toEqual([]);
+  });
+
+  it("removes an unsupported homework time and defaults a date-only due date to 23:59", () => {
+    const value = extraction(null);
+    value.assessments[0] = {
+      ...value.assessments[0], id: "hw1", type: "homework", title: "HW1",
+      date: null, due_date: "2026-09-09", due_time: "20:00",
+    };
+    const result = verifyAssessmentEvidence(value, [{ page: 5, text: "HW1 -- 9/9", items: [] }]);
+    expect(result.assessments[0]).toMatchObject({ due_time: "23:59", source: { page: 5, text: "HW1 -- 9/9" } });
+    expect(result.metadata.warnings).toEqual([]);
+  });
+
+  it("preserves an explicitly evidenced homework time", () => {
+    const value = extraction(null);
+    value.assessments[0] = {
+      ...value.assessments[0], id: "hw1", type: "homework", title: "HW1",
+      date: null, due_date: "2026-09-09", due_time: "20:00",
+    };
+    const result = verifyAssessmentEvidence(value, [{ page: 5, text: "HW1 due 9/9 at 8:00 PM", items: [] }]);
+    expect(result.assessments[0].due_time).toBe("20:00");
   });
 
   it("bounds retained source snippets", () => {

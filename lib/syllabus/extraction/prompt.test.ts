@@ -15,6 +15,7 @@ const page = (pageNumber: number, text: string): PdfPageText => ({
 describe("SYLLABUS_EXTRACTION_INSTRUCTIONS", () => {
   it.each([
     "Never invent or infer missing dates",
+    "homework or quiz has a due date",
     "Never infer a final exam date",
     'date_status "TBD"',
     'date_status "ambiguous"',
