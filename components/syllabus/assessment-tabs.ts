@@ -1,4 +1,4 @@
-import type { Assessment } from "../../lib/syllabus";
+import type { Assessment, ExtractionWarning } from "../../lib/syllabus";
 
 export type AssessmentTab = "exams" | "homework" | "quizzes" | "others";
 
@@ -18,4 +18,11 @@ export function assessmentTabFor(type: Assessment["type"]): AssessmentTab {
 
 export function assessmentsForTab(assessments: Assessment[], tab: AssessmentTab): Assessment[] {
   return assessments.filter((assessment) => assessmentTabFor(assessment.type) === tab);
+}
+
+export function warningsForAssessment(
+  warnings: ExtractionWarning[],
+  assessmentId: string,
+): ExtractionWarning[] {
+  return warnings.filter((warning) => warning.assessment_id === assessmentId);
 }

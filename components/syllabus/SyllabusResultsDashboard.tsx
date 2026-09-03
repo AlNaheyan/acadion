@@ -2,7 +2,6 @@ import { CalendarConnectionsPanel } from "../calendar/CalendarConnectionsPanel";
 import { AssessmentTabs } from "./AssessmentTabs";
 import { CalendarExportPanel } from "./CalendarExportPanel";
 import { CourseSummaryCard } from "./CourseSummaryCard";
-import { ExtractionWarnings } from "./ExtractionWarnings";
 import type { ImportedSyllabusResponse } from "./upload-state";
 
 export function SyllabusResultsDashboard({ result }: { result: ImportedSyllabusResponse }) {
@@ -13,7 +12,6 @@ export function SyllabusResultsDashboard({ result }: { result: ImportedSyllabusR
         <CalendarConnectionsPanel />
       </div>
       <AssessmentTabs result={result} />
-      <ExtractionWarnings warnings={result.warnings} assessments={result.assessments} />
       <CalendarExportPanel result={result} />
     </section>
   );
