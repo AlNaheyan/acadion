@@ -1,5 +1,6 @@
 import type { PdfPageText } from "../pdf";
 import type { Assessment, CourseExtraction, SourceEvidence } from "../schema";
+import { normalizeTime } from "../normalize";
 
 export const DEFAULT_MAX_EVIDENCE_LENGTH = 300;
 
@@ -57,10 +58,64 @@ function removeUnsupportedTimes(assessment: Assessment, source: SourceEvidence |
   };
 }
 
-function applyDueTimeDefault(assessment: Assessment): Assessment {
-  return assessment.date_status === "confirmed" && assessment.due_date && !assessment.due_time && (assessment.type === "homework" || assessment.type === "quiz")
-    ? { ...assessment, due_time: "23:59" }
-    : assessment;
+type DefaultableAssessmentType = "homework" | "quiz";
+
+const policyCategoryPatterns: Record<DefaultableAssessmentType, RegExp> = {
+  homework: /\b(?:homeworks?|hw|hws|assignments?|problem sets?)\b/i,
+  quiz: /\bquizzes?\b/i,
+};
+
+function policyFragments(text: string): string[] {
+  return text
+    .split(/(?:\r?\n|(?<=[.!?])\s+)/)
+    .map((fragment) => fragment.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+function normalizePolicyTime(raw: string): string | null {
+  return normalizeTime(raw.replace(/\./g, "").replace(/\s+/g, " ").trim()).value;
+}
+
+function findCategoryDueTimePolicies(
+  pages: PdfPageText[],
+): Record<DefaultableAssessmentType, Set<string>> {
+  const policies: Record<DefaultableAssessmentType, Set<string>> = {
+    homework: new Set<string>(),
+    quiz: new Set<string>(),
+  };
+  const timeAfterDeadline = /\b(?:due|deadline|close[sd]?|submit(?:ted)?|submission)\b[^.!?\n]{0,100}?\b(?:at|by)\s+(\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)|(?:[01]?\d|2[0-3]):[0-5]\d)\b/i;
+
+  for (const page of pages) {
+    for (const fragment of policyFragments(page.text)) {
+      const timeMatch = fragment.match(timeAfterDeadline);
+      if (!timeMatch) continue;
+      const time = normalizePolicyTime(timeMatch[1]);
+      if (!time) continue;
+
+      for (const type of Object.keys(policyCategoryPatterns) as DefaultableAssessmentType[]) {
+        if (policyCategoryPatterns[type].test(fragment)) policies[type].add(time);
+      }
+    }
+  }
+
+  return policies;
+}
+
+function applyDueTimePolicy(
+  assessment: Assessment,
+  policies: Record<DefaultableAssessmentType, Set<string>>,
+): Assessment {
+  if (
+    assessment.date_status !== "confirmed" ||
+    !assessment.due_date ||
+    assessment.due_time ||
+    (assessment.type !== "homework" && assessment.type !== "quiz")
+  ) {
+    return assessment;
+  }
+
+  const policyTimes = [...policies[assessment.type]];
+  return { ...assessment, due_time: policyTimes.length === 1 ? policyTimes[0] : "23:59" };
 }
 
 function verifyEvidence(
@@ -97,6 +152,7 @@ export function verifyAssessmentEvidence(
   maxLength = DEFAULT_MAX_EVIDENCE_LENGTH,
 ): CourseExtraction {
   const evidenceWarnings = [...extraction.metadata.warnings];
+  const dueTimePolicies = findCategoryDueTimePolicies(pages);
   const assessments = extraction.assessments.map((assessment) => {
     const supplied = verifyEvidence(assessment.source, pages, maxLength);
     const source = supplied?.text ? supplied : recoverEvidence(assessment, pages, maxLength) ?? supplied;
@@ -112,7 +168,10 @@ export function verifyAssessmentEvidence(
       });
     }
 
-    return applyDueTimeDefault(removeUnsupportedTimes({ ...assessment, source }, source));
+    return applyDueTimePolicy(
+      removeUnsupportedTimes({ ...assessment, source }, source),
+      dueTimePolicies,
+    );
   });
 
   return {

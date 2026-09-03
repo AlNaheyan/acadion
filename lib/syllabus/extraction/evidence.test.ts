@@ -112,6 +112,40 @@ describe("verifyAssessmentEvidence", () => {
     expect(result.assessments[0].due_time).toBe("20:00");
   });
 
+  it("applies an explicit syllabus-wide homework due time before the end-of-day default", () => {
+    const value = extraction(null);
+    value.assessments[0] = {
+      ...value.assessments[0], id: "hw1", type: "homework", title: "HW1",
+      date: null, due_date: "2026-09-09", due_time: "20:00",
+    };
+    const result = verifyAssessmentEvidence(value, [{
+      page: 5,
+      text: "HW SCHEDULE\nHW1 -- 9/9\nHW2 9/3 9/16\nHWs are due to Bb by 8pm on the day indicated.",
+      items: [],
+    }]);
+
+    expect(result.assessments[0]).toMatchObject({
+      due_date: "2026-09-09",
+      due_time: "20:00",
+      source: { page: 5, text: "HW1 -- 9/9" },
+    });
+  });
+
+  it("uses a category-wide quiz time when the assessment row has only a date", () => {
+    const value = extraction(null);
+    value.assessments[0] = {
+      ...value.assessments[0], id: "quiz1", type: "quiz", title: "Quiz 1",
+      date: null, due_date: "2026-09-11", due_time: null,
+    };
+    const result = verifyAssessmentEvidence(value, [{
+      page: 2,
+      text: "Quiz 1 due 9/11\nAll quizzes close by 3 p.m.",
+      items: [],
+    }]);
+
+    expect(result.assessments[0].due_time).toBe("15:00");
+  });
+
   it("bounds retained source snippets", () => {
     const longText = "A".repeat(DEFAULT_MAX_EVIDENCE_LENGTH + 20);
     const result = verifyAssessmentEvidence(

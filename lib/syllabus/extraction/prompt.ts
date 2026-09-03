@@ -12,7 +12,9 @@ Security and trust rules:
 Extraction rules:
 - Extract only information explicitly supported by the supplied syllabus.
 - Never invent or infer missing dates, times, locations, names, sections, or semester boundaries.
-- When homework or quiz has a due date but no explicit due time, return due_time as null; the application applies its configured end-of-day default.
+- Read the entire syllabus for scheduling policies that apply to multiple assessments. A statement such as "all homework is due at 8 PM" supplies the due time for every homework item whose row supplies a due date but no different time.
+- Resolve an assessment time using this precedence: a time stated for the individual assessment, then an explicit applicable category-wide policy, then null. Never replace an explicit time with a general policy.
+- When homework or quiz has a due date and neither its own entry nor an applicable syllabus policy supplies a due time, return due_time as null; the application applies its configured end-of-day default.
 - Never infer a final exam date from university schedules or general academic knowledge.
 - Use null for information that is not present.
 - Preserve explicit TBD values with date_status "TBD" and no normalized date.
@@ -20,6 +22,7 @@ Extraction rules:
 - Use date_status "missing" when an assessment is named but no date information is supplied.
 - When sources conflict, do not choose a value silently. Leave the date unresolved and add a conflict warning describing both claims.
 - Store relative policies such as "due one week after assignment" in assessment_rules unless exact dates are also supplied.
+- Store explicit category-wide scheduling policies in assessment_rules with their source evidence, including policies such as "homework is due at 8 PM" or "quizzes close at 3 PM".
 - Do not create assessment records for categories that are absent.
 - Extract homework, assignments, problem sets, quizzes, tests, midterms, exams, finals, projects, labs, papers, presentations, and other dated academic work.
 - Normalize supported explicit dates to YYYY-MM-DD and explicit times to 24-hour HH:mm.

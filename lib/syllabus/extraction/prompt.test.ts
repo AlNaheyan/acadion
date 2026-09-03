@@ -16,6 +16,8 @@ describe("SYLLABUS_EXTRACTION_INSTRUCTIONS", () => {
   it.each([
     "Never invent or infer missing dates",
     "homework or quiz has a due date",
+    "all homework is due at 8 PM",
+    "category-wide policy",
     "Never infer a final exam date",
     'date_status "TBD"',
     'date_status "ambiguous"',
