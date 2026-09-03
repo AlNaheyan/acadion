@@ -15,7 +15,7 @@ type LoadState =
   | { phase: "ready"; calendars: CalendarChoice[]; selectedId: string }
   | { phase: "error"; message: string };
 
-export function GoogleCalendarSettings() {
+export function GoogleCalendarSettings({ embedded = false }: { embedded?: boolean }) {
   const [state, setState] = useState<LoadState>({ phase: "loading" });
   const [saving, setSaving] = useState(false);
 
@@ -68,8 +68,8 @@ export function GoogleCalendarSettings() {
   }
 
   return (
-    <section aria-labelledby="google-calendar-title" className="mb-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-      <h2 id="google-calendar-title" className="text-xl font-semibold">Google Calendar</h2>
+    <section aria-labelledby="google-calendar-title" className={embedded ? "rounded-2xl border border-zinc-200 bg-zinc-50 p-4" : "mb-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"}>
+      <h3 id="google-calendar-title" className="font-semibold">Google Calendar</h3>
       <p className="mt-2 text-sm leading-6 text-zinc-600">Choose where confirmed course events will be added.</p>
 
       {state.phase === "loading" && <p className="mt-4 text-sm text-zinc-500">Loading calendar connection…</p>}

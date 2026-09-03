@@ -1,13 +1,7 @@
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 import type { ImportedSyllabusResponse } from "./upload-state";
-import { presentWarning, type WarningSeverity } from "./warning-presentation";
-
-const severityClasses: Record<WarningSeverity, string> = {
-  attention: "border-amber-200 bg-amber-50 text-amber-950",
-  review: "border-orange-200 bg-orange-50 text-orange-950",
-  critical: "border-red-200 bg-red-50 text-red-950",
-};
+import { presentWarning } from "./warning-presentation";
 
 export function ExtractionWarnings({
   warnings,
@@ -27,7 +21,7 @@ export function ExtractionWarnings({
   );
 
   return (
-    <section aria-labelledby="extraction-warnings-title" className="mt-6 rounded-3xl border border-amber-200 bg-white p-6 sm:p-8">
+    <section aria-labelledby="extraction-warnings-title" className="mt-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-5 sm:p-6">
       <div className="flex items-start gap-3">
         <AlertTriangle aria-hidden="true" className="mt-1 h-5 w-5 shrink-0 text-amber-600" />
         <div>
@@ -40,7 +34,7 @@ export function ExtractionWarnings({
         </div>
       </div>
 
-      <ul className="mt-5 space-y-3">
+      <ul className="mt-4 divide-y divide-amber-200/80 border-t border-amber-200/80">
         {warnings.map((warning, index) => {
           const presentation = presentWarning(warning);
           const affectedTitle = warning.assessment_id
@@ -50,7 +44,7 @@ export function ExtractionWarnings({
           return (
             <li
               key={`${warning.type}-${warning.assessment_id ?? "general"}-${index}`}
-              className={`rounded-2xl border p-4 ${severityClasses[presentation.severity]}`}
+              className="py-4 text-amber-950"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold">

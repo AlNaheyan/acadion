@@ -1,13 +1,11 @@
 import Nav from "../../components/Nav";
-import { GoogleCalendarSettings } from "../../components/calendar/GoogleCalendarSettings";
-import { MicrosoftCalendarSettings } from "../../components/calendar/MicrosoftCalendarSettings";
 import { SyllabusUploader } from "../../components/syllabus/SyllabusUploader";
 
 export default function CourseHomegroundPage() {
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-950">
       <Nav />
-      <main className="mx-auto w-full max-w-5xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-6xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
         <header className="mb-8 max-w-3xl">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
             Course homeground
@@ -19,8 +17,6 @@ export default function CourseHomegroundPage() {
             Import the dates your professor provided, review anything uncertain, and prepare a calendar you can trust.
           </p>
         </header>
-        <GoogleCalendarSettings />
-        <MicrosoftCalendarSettings />
         <SyllabusUploader />
       </main>
     </div>

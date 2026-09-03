@@ -4,14 +4,7 @@ import { useReducer, useRef, useState } from "react";
 import { FileText, LoaderCircle, Upload, X } from "lucide-react";
 
 import { Button } from "../ui/button";
-import { CourseSummaryCard } from "./CourseSummaryCard";
-import { ExtractionWarnings } from "./ExtractionWarnings";
-import { ExtractedDatesReview } from "./ExtractedDatesReview";
-import { ClassCalendarAction } from "./ClassCalendarAction";
-import { AssessmentCalendarAction } from "./AssessmentCalendarAction";
-import { CalendarExportConfirmation } from "./CalendarExportConfirmation";
-import { CalendarExportGuidance } from "./CalendarExportGuidance";
-import { OutlookEventActions } from "../calendar/OutlookEventActions";
+import { SyllabusResultsDashboard } from "./SyllabusResultsDashboard";
 import {
   importSyllabus,
   syllabusUploadReducer,
@@ -63,10 +56,10 @@ export function SyllabusUploader() {
 
   return (
     <>
-    <section
-      aria-labelledby="syllabus-upload-title"
-      className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"
-    >
+      <section
+        aria-labelledby="syllabus-upload-title"
+        className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"
+      >
       <div className="mb-6 max-w-2xl">
         <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500">
           Syllabus import
@@ -143,32 +136,10 @@ export function SyllabusUploader() {
           )}
         </div>
       </form>
-    </section>
-    {state.phase === "success" && (
-      <>
-        <CourseSummaryCard result={state.result} />
-        <ExtractionWarnings
-          warnings={state.result.warnings}
-          assessments={state.result.assessments}
-        />
-        <ExtractedDatesReview result={state.result} />
-        <section aria-labelledby="calendar-actions-title" className="mt-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-          <h2 id="calendar-actions-title" className="text-xl font-semibold text-zinc-950">
-            Calendar exports
-          </h2>
-          <p className="mt-1 text-sm text-zinc-600">
-            Download standard calendar files after reviewing the extracted dates above.
-          </p>
-          <CalendarExportConfirmation result={state.result} />
-          <CalendarExportGuidance result={state.result} />
-          <div className="mt-5 grid gap-5 lg:grid-cols-2">
-            <ClassCalendarAction result={state.result} />
-            <AssessmentCalendarAction result={state.result} />
-          </div>
-          <OutlookEventActions result={state.result} />
-        </section>
-      </>
-    )}
+      </section>
+      {state.phase === "success" && (
+        <SyllabusResultsDashboard key={state.result.course_id} result={state.result} />
+      )}
     </>
   );
 }

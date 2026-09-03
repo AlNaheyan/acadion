@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 interface Calendar { id: string; name: string; isDefault: boolean }
-export function MicrosoftCalendarSettings() {
+export function MicrosoftCalendarSettings({ embedded = false }: { embedded?: boolean }) {
   const [calendars, setCalendars] = useState<Calendar[] | null>(null);
   const [selected, setSelected] = useState("");
   const [connected, setConnected] = useState<boolean | null>(null);
@@ -21,8 +21,8 @@ export function MicrosoftCalendarSettings() {
     const response = await fetch("/api/calendar/microsoft/connection", { method: "DELETE" });
     if (response.ok) { setConnected(false); setCalendars(null); } else setMessage("Outlook could not be disconnected.");
   }
-  return <section aria-labelledby="outlook-title" className="mb-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-    <h2 id="outlook-title" className="text-xl font-semibold">Microsoft Outlook</h2>
+  return <section aria-labelledby="outlook-title" className={embedded ? "rounded-2xl border border-zinc-200 bg-zinc-50 p-4" : "mb-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"}>
+    <h3 id="outlook-title" className="font-semibold">Microsoft Outlook</h3>
     <p className="mt-2 text-sm text-zinc-600">Choose an editable Outlook calendar for confirmed course events.</p>
     {connected === null && !message && <p className="mt-4 text-sm text-zinc-500">Loading Outlook connection…</p>}
     {connected === false && <a href="/api/calendar/microsoft/connect" className="mt-4 inline-flex rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white">Connect Microsoft Outlook</a>}
