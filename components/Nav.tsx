@@ -73,7 +73,7 @@ export default function Nav() {
         </SignedOut>
 
         <SignedIn>
-          <div className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 ring-1 ring-neutral-900">
+          <div className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center">
             <UserButton
               userProfileUrl="/profile"
               appearance={{
