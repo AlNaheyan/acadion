@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { Assessment, Course, Meeting } from "../../syllabus";
 import { firstMeetingDate, type CalendarDateRange } from "../classes";
+import { selectAssessmentSchedule } from "../assessment-schedule";
 
 const outlookDay = { MONDAY: "monday", TUESDAY: "tuesday", WEDNESDAY: "wednesday", THURSDAY: "thursday", FRIDAY: "friday", SATURDAY: "saturday", SUNDAY: "sunday" } as const;
 export interface MicrosoftEventPayload {
@@ -34,12 +35,12 @@ export function mapMeetingToMicrosoftEvent(input: { courseId: string; course: Co
 
 export function mapAssessmentToMicrosoftEvent(input: { courseId: string; course: Course; assessment: Assessment; timezone: string; blocked?: boolean }): MicrosoftCalendarEvent | null {
   const { assessment } = input; if (assessment.date_status !== "confirmed" || input.blocked) return null;
-  const date = assessment.date ?? assessment.due_date ?? assessment.release_date; if (!date) return null;
-  const time = assessment.date ? assessment.start_time : assessment.due_date ? assessment.due_time : null;
+  const schedule = selectAssessmentSchedule(assessment); if (!schedule) return null;
+  const { date, startTime: time, endTime: explicitEndTime } = schedule;
   const logicalKey = `assessment:${input.courseId}:${assessment.id}`; const label = input.course.code ?? input.course.name ?? "Course";
   const startTime = time ?? "00:00"; const fallbackEnd = time ? minuteAfter(date, time) : null;
-  const endDate = time ? (assessment.date && assessment.end_time ? date : fallbackEnd!.date) : nextDate(date);
-  const endTime = assessment.date && assessment.end_time ? assessment.end_time : fallbackEnd?.time ?? "00:00";
+  const endDate = time ? (explicitEndTime ? date : fallbackEnd!.date) : nextDate(date);
+  const endTime = explicitEndTime ?? fallbackEnd?.time ?? "00:00";
   return { logicalKey, payload: {
     subject: `${label} - ${assessment.title}`, transactionId: transactionId(logicalKey),
     body: { contentType: "text", content: `Assessment type: ${assessment.type}.${assessment.coverage ? ` Coverage: ${assessment.coverage}` : ""}` },

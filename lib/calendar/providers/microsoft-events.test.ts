@@ -15,6 +15,13 @@ describe("Microsoft Outlook event mapping", () => {
     expect(mapAssessmentToMicrosoftEvent({ courseId: "course", course, assessment, timezone: "UTC" })?.payload).toMatchObject({ isAllDay: true, start: { dateTime: "2026-10-01T00:00:00" }, end: { dateTime: "2026-10-02T00:00:00" } });
     expect(mapAssessmentToMicrosoftEvent({ courseId: "course", course, assessment: { ...assessment, date_status: "TBD" }, timezone: "UTC" })).toBeNull();
   });
+  it("creates a timed deadline when homework has both a generic date and due time", () => {
+    const assessment: Assessment = { id: "hw1", type: "homework", title: "HW1", release_date: null, due_date: "2026-09-09", date: "2026-09-09", due_time: "20:00", start_time: null, end_time: null, location: null, coverage: null, date_status: "confirmed", raw_date_text: null, source: null };
+    expect(mapAssessmentToMicrosoftEvent({ courseId: "course", course, assessment, timezone: "Eastern Standard Time" })?.payload).toMatchObject({
+      start: { dateTime: "2026-09-09T20:00:00" },
+      end: { dateTime: "2026-09-09T20:01:00" },
+    });
+  });
   it("posts to the selected encoded calendar", async () => {
     const event = mapMeetingToMicrosoftEvent({ courseId: "course", course, meeting, timezone: "UTC" })!;
     const fetcher = vi.fn().mockResolvedValue(Response.json({ id: "outlook-event" }));

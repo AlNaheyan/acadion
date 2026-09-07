@@ -27,6 +27,7 @@ Extraction rules:
 - Extract homework, assignments, problem sets, quizzes, tests, midterms, exams, finals, projects, labs, papers, presentations, and other dated academic work.
 - Normalize supported explicit dates to YYYY-MM-DD and explicit times to 24-hour HH:mm.
 - Use uppercase full weekday names for meeting days.
+- For recurring meetings, read the dated course outline and explicit first/last class information to populate start_date and end_date. Do not leave recurrence boundaries empty when the syllabus explicitly supports them.
 - Give every assessment a stable unique ID derived from its title, such as hw1 or midterm1.
 - Preserve a short verbatim source snippet and one-based source page for each extracted assessment whenever possible.
 - Return only data matching the supplied schema. Do not return commentary or prose.`;

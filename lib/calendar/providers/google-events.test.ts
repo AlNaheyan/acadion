@@ -64,4 +64,18 @@ describe("Google assessment events", () => {
     expect(mapAssessmentToGoogleEvent({ courseId: input.courseId, course: input.course, assessment, timezone: input.timezone, blocked: true })).toBeNull();
     expect(mapAssessmentToGoogleEvent({ courseId: input.courseId, course: input.course, assessment: { ...assessment, date_status: "TBD" }, timezone: input.timezone })).toBeNull();
   });
+
+  it("creates a timed deadline when homework has both a generic date and due time", () => {
+    const event = mapAssessmentToGoogleEvent({
+      courseId: input.courseId,
+      course: input.course,
+      assessment: { ...assessment, id: "hw1", type: "homework", title: "HW1", date: "2026-09-09", start_time: null, end_time: null, due_date: "2026-09-09", due_time: "20:00" },
+      timezone: input.timezone,
+    });
+    expect(event?.payload).toMatchObject({
+      start: { dateTime: "2026-09-09T20:00:00", timeZone: "America/New_York" },
+      end: { dateTime: "2026-09-09T20:00:00", timeZone: "America/New_York" },
+      endTimeUnspecified: true,
+    });
+  });
 });

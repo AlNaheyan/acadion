@@ -5,6 +5,7 @@ import type {
 } from "../syllabus";
 import { serializeIcsCalendar, type IcsProperty } from "./ics";
 import { createCalendarEventUid } from "./uid";
+import { selectAssessmentSchedule } from "./assessment-schedule";
 
 export interface AssessmentCalendarInput {
   courseId: string;
@@ -80,47 +81,28 @@ function eventForAssessment(
     { name: "DTSTAMP", value: utcTimestamp(input.generatedAt) },
   ];
   let dateProperties: IcsProperty[];
+  const schedule = selectAssessmentSchedule(assessment);
 
-  if (assessment.date) {
+  if (schedule) {
     dateProperties = [
       {
         name: "DTSTART",
-        value: assessment.start_time
-          ? `${compactDate(assessment.date)}T${compactTime(assessment.start_time)}`
-          : compactDate(assessment.date),
-        parameters: assessment.start_time
+        value: schedule.startTime
+          ? `${compactDate(schedule.date)}T${compactTime(schedule.startTime)}`
+          : compactDate(schedule.date),
+        parameters: schedule.startTime
           ? { TZID: timezone }
           : { VALUE: "DATE" },
       },
-      ...(assessment.end_time
+      ...(schedule.endTime
         ? [
             {
               name: "DTEND",
-              value: `${compactDate(assessment.date)}T${compactTime(assessment.end_time)}`,
+              value: `${compactDate(schedule.date)}T${compactTime(schedule.endTime)}`,
               parameters: { TZID: timezone },
             },
           ]
         : []),
-    ];
-  } else if (assessment.due_date) {
-    dateProperties = [
-      {
-        name: "DTSTART",
-        value: assessment.due_time
-          ? `${compactDate(assessment.due_date)}T${compactTime(assessment.due_time)}`
-          : compactDate(assessment.due_date),
-        parameters: assessment.due_time
-          ? { TZID: timezone }
-          : { VALUE: "DATE" },
-      },
-    ];
-  } else if (assessment.release_date) {
-    dateProperties = [
-      {
-        name: "DTSTART",
-        value: compactDate(assessment.release_date),
-        parameters: { VALUE: "DATE" },
-      },
     ];
   } else {
     return null;

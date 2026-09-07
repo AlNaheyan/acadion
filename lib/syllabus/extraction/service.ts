@@ -12,6 +12,7 @@ import {
 import { verifyAssessmentEvidence } from "./evidence";
 import { deriveExtractionWarnings } from "./warnings";
 import { buildSyllabusExtractionPrompt, type SyllabusExtractionPrompt } from "./prompt";
+import { applyDocumentMeetingRanges } from "./meeting-ranges";
 
 export type SyllabusExtractionServiceErrorCode =
   | "INVALID_DOCUMENT_TEXT"
@@ -66,6 +67,6 @@ export async function extractSyllabus(
   }
 
   return deriveExtractionWarnings(
-    verifyAssessmentEvidence(validation.data, pages),
+    applyDocumentMeetingRanges(verifyAssessmentEvidence(validation.data, pages), pages),
   );
 }

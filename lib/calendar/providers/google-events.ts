@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import type { Assessment, Course, Meeting } from "../../syllabus";
 import { firstMeetingDate, zonedLocalToUtc, type CalendarDateRange } from "../classes";
+import { selectAssessmentSchedule } from "../assessment-schedule";
 
 const recurrenceDay = {
   MONDAY: "MO", TUESDAY: "TU", WEDNESDAY: "WE", THURSDAY: "TH",
@@ -35,13 +36,13 @@ export function mapAssessmentToGoogleEvent(input: {
 }): GoogleClassEvent | null {
   const { assessment } = input;
   if (assessment.date_status !== "confirmed" || input.blocked) return null;
-  const date = assessment.date ?? assessment.due_date ?? assessment.release_date;
-  const time = assessment.date ? assessment.start_time : assessment.due_date ? assessment.due_time : null;
-  if (!date) return null;
+  const schedule = selectAssessmentSchedule(assessment);
+  if (!schedule) return null;
+  const { date, startTime: time, endTime } = schedule;
   const logicalKey = `assessment:${input.courseId}:${assessment.id}`;
   const start = time ? { dateTime: `${date}T${time}:00`, timeZone: input.timezone } : { date };
-  const end = time && assessment.date && assessment.end_time
-    ? { dateTime: `${date}T${assessment.end_time}:00`, timeZone: input.timezone }
+  const end = time && endTime
+    ? { dateTime: `${date}T${endTime}:00`, timeZone: input.timezone }
     : time ? start : { date: nextDate(date) };
   const label = input.course.code ?? input.course.name ?? "Course";
   return { logicalKey, payload: {
@@ -50,7 +51,7 @@ export function mapAssessmentToGoogleEvent(input: {
     description: [`Assessment type: ${assessment.type}.`, assessment.coverage ? `Coverage: ${assessment.coverage}` : null].filter(Boolean).join(" "),
     ...(assessment.location ? { location: assessment.location } : {}),
     start, end,
-    ...((time && !(assessment.date && assessment.end_time)) ? { endTimeUnspecified: true } : {}),
+    ...((time && !endTime) ? { endTimeUnspecified: true } : {}),
     extendedProperties: { private: { acadionKey: logicalKey, acadionCourseId: input.courseId, acadionType: "assessment" } },
   } };
 }

@@ -71,6 +71,18 @@ describe("generateAssessmentCalendar", () => {
     expect(result.ics).not.toContain("DTEND");
   });
 
+  it("prefers a timed due date when a homework also repeats it as a generic event date", () => {
+    const result = calendar([
+      assessment({
+        id: "homework-1", type: "homework", title: "Homework 1",
+        date: "2026-09-08", start_time: null, end_time: null,
+        due_date: "2026-09-08", due_time: "20:00",
+      }),
+    ]);
+    expect(result.ics).toContain("DTSTART;TZID=America/New_York:20260908T200000");
+    expect(result.ics).not.toContain("DTSTART;VALUE=DATE:20260908");
+  });
+
   it("exports date-only and release-only assessments as all-day events", () => {
     const result = calendar([
       assessment({ start_time: null, end_time: null }),
