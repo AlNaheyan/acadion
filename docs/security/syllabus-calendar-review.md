@@ -18,7 +18,7 @@
 - OAuth state is random, encrypted, bound to the authenticated user, expires after ten minutes, and is stored in HttpOnly SameSite cookies.
 - Authorization uses PKCE. Refresh/access tokens are encrypted with AES-256-GCM and remain server-only.
 - Production callback URLs must use HTTPS. Client secrets and `OAUTH_TOKEN_ENCRYPTION_KEY` belong only in deployment environment storage.
-- Disconnect deletes locally stored credentials. Google tokens are also revoked; Microsoft users can revoke application consent from their Microsoft account or tenant portal.
+- Disconnect deletes locally stored credentials and revokes Google tokens.
 
 ## Residual operational requirements
 

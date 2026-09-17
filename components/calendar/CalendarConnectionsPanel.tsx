@@ -1,7 +1,6 @@
 import { Link2 } from "lucide-react";
 
 import { GoogleCalendarSettings } from "./GoogleCalendarSettings";
-import { MicrosoftCalendarSettings } from "./MicrosoftCalendarSettings";
 
 export function CalendarConnectionsPanel() {
   return (
@@ -15,10 +14,7 @@ export function CalendarConnectionsPanel() {
           <p className="text-xs text-zinc-500">Choose where events should go.</p>
         </div>
       </div>
-      <div className="space-y-3">
-        <GoogleCalendarSettings embedded />
-        <MicrosoftCalendarSettings embedded />
-      </div>
+      <GoogleCalendarSettings embedded />
     </aside>
   );
 }

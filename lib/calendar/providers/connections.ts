@@ -1,8 +1,5 @@
 import { decryptOAuthSecret, encryptOAuthSecret } from "./token-crypto";
 import type { GoogleTokenResponse } from "./google";
-import type { MicrosoftTokenResponse } from "./microsoft";
-
-export type CalendarProvider = "google" | "microsoft";
 
 export interface CalendarConnectionClient {
   from(table: "calendar_connections"): {
@@ -62,17 +59,11 @@ export async function getGoogleConnectionSecrets(
   client: CalendarConnectionClient,
   userId: string,
 ): Promise<GoogleConnectionSecrets | null> {
-  return getProviderConnectionSecrets(client, userId, "google");
-}
-
-export async function getProviderConnectionSecrets(
-  client: CalendarConnectionClient, userId: string, provider: CalendarProvider,
-): Promise<GoogleConnectionSecrets | null> {
   const { data, error } = await client
     .from("calendar_connections")
     .select("id,access_token_ciphertext,refresh_token_ciphertext,token_expires_at,selected_calendar_id,selected_calendar_timezone")
     .eq("user_id", userId)
-    .eq("provider", provider)
+    .eq("provider", "google")
     .maybeSingle();
   if (error) throw new Error("Google connection could not be loaded.");
   if (!data) return null;
@@ -93,47 +84,15 @@ export async function saveGoogleAccessToken(
   expiresIn: number,
   now = Date.now(),
 ): Promise<void> {
-  return saveProviderAccessToken(client, userId, "google", accessToken, expiresIn, now);
-}
-
-export async function saveProviderAccessToken(
-  client: CalendarConnectionClient, userId: string, provider: CalendarProvider,
-  accessToken: string, expiresIn: number, now = Date.now(), refreshToken?: string,
-): Promise<void> {
   const { error } = await client
     .from("calendar_connections")
     .update({
       access_token_ciphertext: encryptOAuthSecret(accessToken),
       token_expires_at: new Date(now + expiresIn * 1000).toISOString(),
-      ...(refreshToken ? { refresh_token_ciphertext: encryptOAuthSecret(refreshToken) } : {}),
     })
     .eq("user_id", userId)
-    .eq("provider", provider);
+    .eq("provider", "google");
   if (error) throw new Error("Google access token could not be saved.");
-}
-
-export async function saveMicrosoftConnection(client: CalendarConnectionClient, userId: string, tokens: MicrosoftTokenResponse, now = Date.now()): Promise<void> {
-  if (!tokens.refresh_token) throw new Error("Microsoft did not return a refresh token.");
-  const { error } = await client.from("calendar_connections").upsert({
-    user_id: userId, provider: "microsoft",
-    access_token_ciphertext: encryptOAuthSecret(tokens.access_token),
-    refresh_token_ciphertext: encryptOAuthSecret(tokens.refresh_token),
-    token_expires_at: new Date(now + tokens.expires_in * 1000).toISOString(),
-    scopes: tokens.scope.split(" ").filter(Boolean),
-  }, { onConflict: "user_id,provider" });
-  if (error) throw new Error("Microsoft connection could not be saved.");
-}
-
-export async function deleteMicrosoftConnection(client: CalendarConnectionClient, userId: string): Promise<void> {
-  const { error } = await client.from("calendar_connections").delete().eq("user_id", userId).eq("provider", "microsoft");
-  if (error) throw new Error("Microsoft connection could not be removed.");
-}
-
-export async function saveSelectedMicrosoftCalendar(client: CalendarConnectionClient, userId: string, calendar: { id: string; name: string }): Promise<void> {
-  const { error } = await client.from("calendar_connections").update({
-    selected_calendar_id: calendar.id, selected_calendar_name: calendar.name, selected_calendar_timezone: null,
-  }).eq("user_id", userId).eq("provider", "microsoft");
-  if (error) throw new Error("Microsoft calendar selection could not be saved.");
 }
 
 export async function saveSelectedGoogleCalendar(

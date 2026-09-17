@@ -120,7 +120,6 @@ export default function CoursesRevampedPage() {
           <BookOpen className="w-8 h-8" />
           <h1 className="text-4xl font-bold">Course Catalog</h1>
         </div>
-        <p className="text-gray-600 text-lg">Explore our comprehensive course offerings</p>
       </div>
 
       <div className="flex gap-8">

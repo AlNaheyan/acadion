@@ -1,7 +1,6 @@
 import { CalendarPlus, Download } from "lucide-react";
 
 import { GoogleEventActions } from "../calendar/GoogleEventActions";
-import { OutlookEventActions } from "../calendar/OutlookEventActions";
 import { AssessmentCalendarAction } from "./AssessmentCalendarAction";
 import { CalendarExportConfirmation } from "./CalendarExportConfirmation";
 import { CalendarExportGuidance } from "./CalendarExportGuidance";
@@ -19,9 +18,8 @@ export function CalendarExportPanel({ result }: { result: ImportedSyllabusRespon
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="mt-6">
         <GoogleEventActions result={result} />
-        <OutlookEventActions result={result} />
       </div>
 
       <div className="mt-5 rounded-2xl bg-zinc-50 p-4 sm:p-5">
